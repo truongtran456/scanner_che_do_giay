@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <title>Quét thẻ — Chế độ giấy</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Chờ kết nối presenter -->
+        <section id="view-waiting" class="view active">
+            <div class="wait-card">
+                <div class="wait-icon">📷</div>
+                <h1>Máy quét thẻ</h1>
+                <p id="wait-session" class="wait-session"></p>
+                <p id="wait-status" class="wait-status">Đang kết nối tới máy chiếu...</p>
+                <div class="wait-spinner"></div>
+                <p class="wait-hint">Mở link từ mã QR trên máy tính giáo viên.<br>Cần internet để đồng bộ realtime.</p>
+            </div>
+        </section>
+
+        <!-- Camera quét thẻ -->
+        <section id="view-scanner" class="view scanner-view">
+            <video id="scanner-video" autoplay playsinline muted></video>
+            <canvas id="scanner-canvas" class="hidden"></canvas>
+            <div class="scanner-overlay-top">
+                <span class="scan-pill" id="scan-q-pill">📋 Câu —</span>
+                <span class="scan-pill" id="scan-count-pill">✓ 0/0</span>
+                <button class="scan-pill scan-pill-danger" id="btn-end-session-top" type="button">● Kết thúc</button>
+            </div>
+            <div id="scan-student-tag" class="scan-student-tag hidden"></div>
+            <div id="scan-toast" class="scan-toast hidden"></div>
+            <div id="scan-hint" class="scan-hint hidden"></div>
+            <div id="scanner-drawer" class="scanner-drawer hidden">
+                <div id="scanner-answered-list" class="scanner-drawer-list"></div>
+            </div>
+            <div class="scanner-overlay-bottom">
+                <button class="scan-drawer-btn" id="btn-toggle-drawer" type="button">👥 <span id="scan-answered-count">0/0 đã trả lời</span> ▲</button>
+                <div id="scanner-active">
+                    <button class="btn-lock-scan" id="btn-lock-question" type="button">🔒 Chốt câu · Hiện đáp án</button>
+                </div>
+                <div id="scanner-result" class="scanner-result-panel hidden">
+                    <div id="scan-result-header"></div>
+                    <div id="scan-result-bars"></div>
+                    <button class="btn btn-secondary btn-block" id="btn-show-choosers" type="button">👁 Hiển thị người chọn</button>
+                    <button class="btn btn-primary btn-block" id="btn-next-q-result" type="button">Sang câu tiếp →</button>
+                </div>
+            </div>
+            <div id="scanner-reconnect" class="scanner-reconnect hidden">
+                <p>🔴 Mất kết nối</p>
+                <p>Đang kết nối lại...</p>
+            </div>
+        </section>
+
+        <!-- Phiên kết thúc -->
+        <section id="view-ended" class="view">
+            <div class="wait-card ended">
+                <div class="wait-icon">✅</div>
+                <h1>Phiên đã kết thúc</h1>
+                <p>Xem kết quả trên màn hình máy chiếu.</p>
+                <p class="wait-hint">Bạn có thể đóng tab này.</p>
+            </div>
+        </section>
+
+        <!-- Thiếu mã phiên -->
+        <section id="view-no-session" class="view">
+            <div class="wait-card error">
+                <div class="wait-icon">⚠️</div>
+                <h1>Thiếu mã phiên</h1>
+                <p>Quét mã QR trên màn hình máy tính giáo viên để mở đúng link.</p>
+            </div>
+        </section>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div id="modal-box" class="modal-box"></div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
