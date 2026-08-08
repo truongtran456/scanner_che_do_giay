@@ -237,6 +237,7 @@ function onSessionUpdated() {
 
         if (!appState.cameraReady && !appState.cameraStarting) {
             showView('camera-prompt');
+            updateOrientationUI();
         } else {
             showView('scanner');
             updateOrientationUI();
@@ -631,29 +632,38 @@ const MarkerUtil = {
     }
 };
 
-/* ===== HƯỚNG MÀN HÌNH — quét chuẩn khi xoay ngang ===== */
+/* ===== HƯỚNG MÀN HÌNH — chỉ quét khi xoay ngang ===== */
 const ScanOrientation = {
     _landscape: false,
     _angle: 0,
     _type: 'portrait-primary',
     _onChange: null,
+    _landscapeMq: null,
 
     init(onChange) {
         this._onChange = onChange;
+        this._landscapeMq = window.matchMedia('(orientation: landscape)');
         this._read();
-        const fire = () => setTimeout(() => this._handleChange(), 120);
+        const fire = () => setTimeout(() => this._handleChange(), 150);
         window.addEventListener('orientationchange', fire);
         window.addEventListener('resize', () => this._handleChange());
+        this._landscapeMq.addEventListener?.('change', fire);
+        this._landscapeMq.addListener?.(fire);
         if (screen.orientation) screen.orientation.addEventListener('change', fire);
         this._handleChange();
+        this.tryLockLandscape();
     },
 
     _read() {
-        this._landscape = window.innerWidth > window.innerHeight;
-        if (screen.orientation) {
+        const t = screen.orientation?.type;
+        if (t) {
+            this._type = t;
+            this._landscape = t.startsWith('landscape');
             this._angle = screen.orientation.angle;
-            this._type = screen.orientation.type;
         } else {
+            this._landscape = this._landscapeMq
+                ? this._landscapeMq.matches
+                : window.innerWidth > window.innerHeight;
             this._angle = window.orientation || 0;
             this._type = this._landscape ? 'landscape-primary' : 'portrait-primary';
         }
@@ -663,18 +673,26 @@ const ScanOrientation = {
         const wasLandscape = this._landscape;
         this._read();
         updateOrientationUI();
-        if (wasLandscape !== this._landscape && this._onChange) this._onChange();
+        if (wasLandscape !== this._landscape) {
+            if (!this._landscape) {
+                showToast('⚠ Xoay ngang máy — quét dọc sẽ SAI đáp án!', 4000);
+            } else {
+                showToast('✓ Đã xoay ngang — sẵn sàng quét', 2500);
+                this.tryLockLandscape();
+            }
+            if (this._onChange) this._onChange(wasLandscape);
+        }
     },
 
     isLandscape() {
         return this._landscape;
     },
 
-    /** Bù đáp án khi quét ngang (cảm biến camera lệch 90° so với dọc) */
-    getOrientOffset() {
+    /** Xoay khung video (độ CW) — chuẩn hoá ngang về cùng hướng đọc đúng */
+    getFrameRotationDeg() {
         if (!this._landscape) return null;
-        if (this._type === 'landscape-secondary') return 3;
-        return 1; // landscape-primary: xoay ngang → đọc lệch 1 bước (D thay A)
+        if (this._type === 'landscape-secondary') return 90;
+        return 270;
     },
 
     async tryLockLandscape() {
@@ -685,19 +703,41 @@ const ScanOrientation = {
 };
 
 function updateOrientationUI() {
-    const prompt = $('#orientation-prompt');
-    const view = $('#view-scanner');
     const landscape = ScanOrientation.isLandscape();
+    const portrait = !landscape;
 
-    prompt?.classList.toggle('hidden', landscape || !appState.cameraReady);
+    document.body.classList.toggle('portrait-mode', portrait);
+    document.body.classList.toggle('landscape-mode', landscape);
+
+    const view = $('#view-scanner');
     view?.classList.toggle('scan-landscape', landscape);
+    view?.classList.toggle('scan-portrait-mode', portrait && appState.cameraReady);
+
+    // Overlay che toàn màn scanner khi dọc
+    $('#orientation-prompt')?.classList.toggle('hidden', landscape || !appState.cameraReady);
+    $('#scan-portrait-banner')?.classList.toggle('hidden', landscape || !appState.cameraReady);
 
     const tip = $('#scan-frame-tip');
     if (tip) {
         tip.textContent = landscape
             ? 'Giơ thẻ dọc — đáp án ở trên cùng'
-            : 'Xoay ngang máy để bắt đầu quét';
+            : '⛔ Xoay ngang máy để quét';
     }
+
+    // Màn bật camera — chặn nút khi dọc
+    const camBlock = $('#camera-portrait-block');
+    const camBtn = $('#btn-start-camera');
+    camBlock?.classList.toggle('hidden', landscape);
+    if (camBtn) {
+        camBtn.disabled = portrait;
+        camBtn.textContent = landscape
+            ? '▶ Bật camera & quét'
+            : '▶ Bật camera (xoay ngang trước)';
+    }
+
+    // Màn chờ
+    const waitTip = $('.wait-orient-tip');
+    waitTip?.classList.toggle('portrait-warn', portrait);
 }
 
 function captureScanFrame(video, canvas) {
@@ -705,11 +745,50 @@ function captureScanFrame(video, canvas) {
     const vh = video.videoHeight;
     if (!vw || !vh) return null;
 
-    canvas.width = vw;
-    canvas.height = vh;
+    const rot = ScanOrientation.getFrameRotationDeg();
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(video, 0, 0);
-    return ctx.getImageData(0, 0, vw, vh);
+
+    if (rot === 90 || rot === 270) {
+        canvas.width = vh;
+        canvas.height = vw;
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(rot * Math.PI / 180);
+        ctx.drawImage(video, -vw / 2, -vh / 2);
+        ctx.restore();
+    } else if (rot === 180) {
+        canvas.width = vw;
+        canvas.height = vh;
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(Math.PI);
+        ctx.drawImage(video, -vw / 2, -vh / 2);
+        ctx.restore();
+    } else {
+        canvas.width = vw;
+        canvas.height = vh;
+        ctx.drawImage(video, 0, 0);
+    }
+
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function showLandscapeRequiredModal() {
+    showModal(`
+        <div style="text-align:center">
+            <div style="font-size:3rem;margin-bottom:0.5rem">📱↻</div>
+            <h3>Xoay ngang máy trước!</h3>
+            <p style="margin:0.75rem 0;line-height:1.55;font-weight:600;color:rgba(255,255,255,0.75)">
+                Thẻ có <strong style="color:var(--orange)">4 hướng = 4 đáp án</strong>.<br>
+                Quét khi cầm điện thoại <strong style="color:var(--red)">dọc sẽ sai</strong>.<br>
+                Hãy xoay ngang rồi thử lại.
+            </p>
+        </div>
+        <div class="modal-actions" style="justify-content:center">
+            <button class="btn btn-primary" id="mc-landscape-ok">Đã hiểu</button>
+        </div>
+    `);
+    $('#mc-landscape-ok').onclick = hideModal;
 }
 
 /* ===== CARD SCANNER ===== */
@@ -783,14 +862,7 @@ const CardScanner = {
         if (!ScanOrientation.isLandscape()) return;
         if (this.frameCount % 3 !== 0) return;
 
-        const orientOffset = ScanOrientation.getOrientOffset() || 0;
-        let hits = MarkerUtil.decodeAll(img.data, img.width, img.height, students);
-        if (orientOffset) {
-            hits = hits.map(h => ({
-                ...h,
-                orientation: MarkerUtil.correctOrientation(h.orientation, orientOffset)
-            }));
-        }
+        const hits = MarkerUtil.decodeAll(img.data, img.width, img.height, students);
         const seen = new Set();
 
         for (const hit of hits) {
@@ -848,6 +920,7 @@ const CardScanner = {
 function onCardScanned(cardId, orientation, knownStudent = null) {
     const s = appState.session;
     if (!s?.students?.length) return;
+    if (!ScanOrientation.isLandscape()) return;
     if (s.status === SESSION_STATUS.QUESTION_LOCKED || s.status === SESSION_STATUS.QUESTION_RESULT) return;
 
     const student = knownStudent || s.students.find(st => st.cardId === cardId);
@@ -974,6 +1047,13 @@ function renderStudentDrawer(s, q) {
 
 async function startCamera() {
     if (appState.cameraReady || appState.cameraStarting) return appState.cameraReady;
+
+    if (!ScanOrientation.isLandscape()) {
+        showLandscapeRequiredModal();
+        updateOrientationUI();
+        return false;
+    }
+
     appState.cameraStarting = true;
 
     const loading = $('#camera-loading');
@@ -995,6 +1075,7 @@ async function startCamera() {
         showView('scanner');
         updateOrientationUI();
         ScanOrientation.tryLockLandscape();
+        if (!ScanOrientation.isLandscape()) showLandscapeRequiredModal();
         renderScanner();
     } else {
         showToast('Không mở được camera — kiểm tra quyền truy cập');
@@ -1184,10 +1265,14 @@ function bindEvents() {
 
 document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
-    ScanOrientation.init(() => {
+    ScanOrientation.init((wasLandscape) => {
         CardScanner.pending.clear();
         CardScanner.confirmed.clear();
+        if (!wasLandscape && ScanOrientation.isLandscape()) {
+            /* vừa xoay sang ngang */
+        }
     });
+    updateOrientationUI();
     const params = new URLSearchParams(location.search);
     const sessionId = params.get('session');
     if (!sessionId) {

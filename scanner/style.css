@@ -73,6 +73,11 @@ body {
     max-width: 300px; line-height: 1.45;
 }
 .wait-orient-tip strong { color: var(--orange); }
+.wait-orient-tip.portrait-warn {
+    background: rgba(255, 68, 68, 0.15);
+    border-color: rgba(255, 68, 68, 0.55);
+    color: #ff9999;
+}
 .wait-spinner {
     width: 40px; height: 40px; border: 3px solid rgba(57,255,20,0.15);
     border-top-color: var(--lime); border-radius: 50%;
@@ -88,6 +93,27 @@ body {
 }
 .camera-tips strong { color: var(--lime); }
 .btn-camera-go { width: 100%; padding: 1rem; font-size: 1.05rem; margin-top: 0.5rem; }
+.btn-camera-go:disabled {
+    opacity: 0.45; cursor: not-allowed;
+    box-shadow: none; filter: grayscale(0.5);
+}
+
+.portrait-block {
+    width: 100%; text-align: center;
+    padding: 1rem; margin: 0.5rem 0;
+    border-radius: 14px;
+    background: rgba(255, 68, 68, 0.15);
+    border: 2px solid rgba(255, 68, 68, 0.55);
+    animation: portraitPulse 1.5s ease-in-out infinite;
+}
+.portrait-block-icon { font-size: 2.5rem; margin-bottom: 0.35rem; }
+.portrait-block p { font-weight: 700; font-size: 0.95rem; color: #ff8888; line-height: 1.45; }
+.portrait-block p strong { color: var(--red); }
+.portrait-block-sub { font-size: 0.82rem !important; color: rgba(255,255,255,0.6) !important; margin-top: 0.25rem; }
+@keyframes portraitPulse {
+    0%, 100% { border-color: rgba(255, 68, 68, 0.55); }
+    50% { border-color: rgba(255, 149, 0, 0.85); }
+}
 
 .scanner-view {
     position: relative; background: #000;
@@ -95,6 +121,40 @@ body {
 }
 .scanner-view #scanner-video {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    transition: filter 0.3s;
+}
+.scanner-view.scan-portrait-mode #scanner-video {
+    filter: grayscale(0.7) brightness(0.45);
+}
+.scanner-view.scan-portrait-mode .scan-frame-guide {
+    border-color: rgba(255, 68, 68, 0.7);
+    animation: portraitFramePulse 1.2s ease-in-out infinite;
+}
+@keyframes portraitFramePulse {
+    0%, 100% { border-color: rgba(255, 68, 68, 0.7); }
+    50% { border-color: rgba(255, 149, 0, 0.9); }
+}
+.scanner-view.scan-portrait-mode .scan-dock-lock,
+.scanner-view.scan-portrait-mode .scan-dock-btn {
+    opacity: 0.4; pointer-events: none;
+}
+
+.scan-portrait-banner {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 42;
+    padding: 0.55rem 0.75rem;
+    padding-top: max(0.55rem, env(safe-area-inset-top));
+    background: linear-gradient(180deg, rgba(180, 20, 20, 0.95), rgba(120, 10, 10, 0.88));
+    color: #fff; font-family: var(--font-d); font-weight: 800;
+    font-size: 0.88rem; text-align: center;
+    border-bottom: 2px solid var(--orange);
+    animation: bannerPulse 1.2s ease-in-out infinite;
+}
+@keyframes bannerPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.82; }
+}
+.scanner-view.scan-portrait-mode .scan-hud-top {
+    top: 2.2rem;
 }
 
 .camera-loading {
@@ -199,6 +259,11 @@ body {
 }
 .orientation-prompt p strong { color: var(--lime); }
 .orientation-sub { font-size: 0.82rem !important; color: rgba(255,255,255,0.55) !important; }
+.orientation-steps {
+    display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.5rem;
+    font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.65);
+}
+.orientation-steps span::before { content: '→ '; color: var(--orange); }
 .orientation-phone-icon {
     font-size: 3rem;
     animation: rotatePhoneHint 2.2s ease-in-out infinite;

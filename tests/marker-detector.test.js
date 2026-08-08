@@ -299,21 +299,38 @@ console.log('\n[9] Tốc độ xử lý (mỗi khung hình 640x480)');
     check(`mỗi khung < 120ms (đo ${ms.toFixed(1)}ms)`, ms < 120, ms.toFixed(1) + 'ms');
 }
 
-console.log('\n[10] Bù hướng khi quét ngang (camera lệch 90° so với dọc)');
+console.log('\n[10] Xoay khung ngang 270° → đọc đúng như quét dọc');
 {
-    const fix = (letter, offset) => MarkerUtil.correctOrientation(letter, offset);
-    check('offset 1: D→A', fix('D', 1) === 'A', fix('D', 1));
-    check('offset 1: A→B', fix('A', 1) === 'B', fix('A', 1));
-    check('offset 3: B→A', fix('B', 3) === 'A', fix('B', 3));
+    function rotateRgba90CW(src, w, h, times) {
+        let data = src, cw = w, ch = h;
+        for (let t = 0; t < times; t++) {
+            const out = new Uint8ClampedArray(cw * ch * 4);
+            const nw = ch, nh = cw;
+            for (let y = 0; y < ch; y++) {
+                for (let x = 0; x < cw; x++) {
+                    const si = (y * cw + x) * 4;
+                    const nx = ch - 1 - y, ny = x;
+                    const di = (ny * nw + nx) * 4;
+                    out[di] = data[si]; out[di + 1] = data[si + 1];
+                    out[di + 2] = data[si + 2]; out[di + 3] = data[si + 3];
+                }
+            }
+            data = out; cw = nw; ch = nh;
+        }
+        return { data, w: cw, h: ch };
+    }
 
-    // mô phỏng: thẻ A trên cùng nhưng camera ngang đọc nhầm D → bù về A
-    const rgba = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 180, y: 120 }], 640, 480);
-    const raw = MarkerUtil.decodeAll(rgba, 640, 480, students)[0];
-    const corrected = raw ? MarkerUtil.correctOrientation(raw.orientation, 1) : null;
+    // mô phỏng camera ngang: thẻ A trên cùng bị đọc thành D (rot=1)
+    const raw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 180, y: 120 }], 640, 480);
+    const wrong = MarkerUtil.decodeAll(raw, 640, 480, students)[0];
+    check('camera ngang thô: đọc D (sai)', wrong?.orientation === 'D', wrong?.orientation || 'none');
+
+    const fixed = rotateRgba90CW(raw, 640, 480, 3); // 270° CW
+    const hit = MarkerUtil.decodeAll(fixed.data, fixed.w, fixed.h, students)[0];
     check(
-        'camera ngang (+90°): D → bù offset 1 → A',
-        raw?.orientation === 'D' && corrected === 'A',
-        raw ? `${raw.orientation}→${corrected}` : 'không nhận'
+        'xoay khung 270° → thẻ 7 / A (đúng)',
+        hit?.cardNumber === 7 && hit?.orientation === 'A',
+        hit ? `${hit.cardNumber}/${hit.orientation}` : 'không nhận'
     );
 }
 

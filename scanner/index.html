@@ -32,13 +32,18 @@
                 <div class="wait-icon">📷</div>
                 <h1>Sẵn sàng quét!</h1>
                 <p id="camera-prompt-meta" class="wait-status"></p>
+                <div id="camera-portrait-block" class="portrait-block hidden">
+                    <div class="portrait-block-icon" aria-hidden="true">📱↻</div>
+                    <p><strong>Xoay ngang điện thoại / iPad trước!</strong></p>
+                    <p class="portrait-block-sub">Quét khi cầm dọc sẽ <strong>sai đáp án</strong>. Phải xoay ngang mới bật camera.</p>
+                </div>
                 <ul class="camera-tips">
-                    <li><strong>Xoay ngang</strong> điện thoại / iPad trước khi quét</li>
+                    <li><strong>Bắt buộc xoay ngang</strong> trước khi quét</li>
                     <li>Cho phép truy cập <strong>Camera</strong></li>
                     <li>Học sinh giơ thẻ dọc — chữ đáp án chọn ở <strong>trên cùng</strong></li>
                     <li>Quét liên tục nhiều học sinh</li>
                 </ul>
-                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera">▶ Bật camera &amp; quét</button>
+                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera" disabled>▶ Bật camera &amp; quét (xoay ngang trước)</button>
             </div>
         </section>
 
@@ -67,13 +72,23 @@
                 </div>
             </header>
 
-            <!-- Cảnh báo xoay ngang -->
+            <!-- Banner cảnh báo dọc — luôn hiện khi portrait -->
+            <div id="scan-portrait-banner" class="scan-portrait-banner hidden" aria-live="assertive">
+                ⚠ XOAY NGANG MÁY — Quét dọc sẽ sai đáp án!
+            </div>
+
+            <!-- Cảnh báo xoay ngang — che toàn màn -->
             <div id="orientation-prompt" class="orientation-prompt hidden" aria-live="polite">
                 <div class="orientation-prompt-inner">
                     <div class="orientation-phone-icon" aria-hidden="true">📱</div>
                     <h2>Xoay ngang máy để quét</h2>
-                    <p>Thẻ có 4 hướng — 4 đáp án khác nhau.<br>Quét khi <strong>chiều ngang</strong> mới đúng đáp án.</p>
+                    <p>Thẻ có <strong>4 hướng = 4 đáp án</strong>.<br>Cầm dọc điện thoại → <strong>sai đáp án</strong>.</p>
                     <p class="orientation-sub">Học sinh vẫn giơ thẻ <strong>dọc</strong>, chữ đáp án ở trên.</p>
+                    <div class="orientation-steps">
+                        <span>1. Xoay ngang máy</span>
+                        <span>2. Giơ thẻ vào khung</span>
+                        <span>3. Quét liên tục</span>
+                    </div>
                 </div>
             </div>
 
