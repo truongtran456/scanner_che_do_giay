@@ -744,16 +744,22 @@ const ScanOrientation = {
         return this._landscape;
     },
 
-    /** Bù đáp án theo hướng cầm máy (chỉ khi quét ngang) */
+    /** Bù bằng xoay khung — không dùng offset (A+3=D gây sai trên iPhone mới) */
     getOrientOffset() {
-        if (!this._landscape) return 0;
-        if (IS_IOS) return this._type === 'landscape-secondary' ? 1 : 3;
         return 0;
     },
 
     getFrameRotationDeg() {
-        if (!this._landscape || IS_IOS) return 0;
+        if (!this._landscape) return 0;
         return this._type === 'landscape-secondary' ? 90 : 270;
+    },
+
+    /** Cần xoay khung trước khi decode */
+    needsFrameRotation(videoLandscape) {
+        if (!this._landscape) return false;
+        // iOS: buffer camera thường vẫn dọc (vh>vw) dù máy ngang → vẫn phải xoay
+        if (IS_IOS) return true;
+        return videoLandscape;
     }
 };
 
@@ -836,9 +842,8 @@ function captureScanFrame(video, canvas, ctx) {
 
     const drawCtx = ctx || canvas.getContext('2d', { willReadFrequently: true });
     const videoLandscape = vw > vh;
-    // Chỉ xoay khung khi video thật sự ngang (tránh xoay nhầm khi cầm dọc)
     let rot = 0;
-    if (videoLandscape && !IS_IOS && ScanOrientation.isLandscape()) {
+    if (ScanOrientation.needsFrameRotation(videoLandscape)) {
         rot = ScanOrientation.getFrameRotationDeg();
     }
 
@@ -1022,19 +1027,9 @@ const CardScanner = {
         if (!students.length) return;
         if (this.frameCount % 2 !== 0) return;
 
-        const offset = (frame.videoLandscape && ScanOrientation.isLandscape())
-            ? ScanOrientation.getOrientOffset() : 0;
-
         let hits = MarkerUtil.decodeAll(frame.data, frame.width, frame.height, students);
         this._lastQuads = MarkerUtil.stats.quads;
         this._lastDecoded = MarkerUtil.stats.decoded;
-
-        if (offset) {
-            hits = hits.map(h => ({
-                ...h,
-                orientation: MarkerUtil.correctOrientation(h.orientation, offset)
-            }));
-        }
 
         const q = getCurrentQuestion(appState.session);
         const seen = new Set();
