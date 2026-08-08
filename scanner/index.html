@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=14">
+    <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
     <div id="app">
@@ -157,7 +157,16 @@
     </div>
     <div id="toast-container" class="toast-container"></div>
 
+    <div id="rotate-lock-warn" class="rotate-lock-warn hidden" aria-live="assertive" role="alertdialog" aria-labelledby="rotate-lock-title">
+        <div class="rotate-lock-warn-inner">
+            <div class="rotate-lock-warn-icon" aria-hidden="true">⚠️</div>
+            <h2 id="rotate-lock-title">Không quét được — chưa mở khóa xoay</h2>
+            <p>Bạn đang <strong>cầm/xoay ngang</strong> nhưng điện thoại vẫn <strong>khóa màn hình dọc</strong> (Control Center).</p>
+            <p class="rotate-lock-warn-note">Đây <strong>không phải lỗi ứng dụng</strong>. Cầm dọc máy lại để quét, hoặc bật <strong>khóa xoay</strong> rồi xoay ngang.</p>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>
