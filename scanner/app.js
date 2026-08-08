@@ -839,6 +839,10 @@ const CardScanner = {
     questionKey: null,
     CONFIRM_FRAMES: 2,
 
+    _lockKey(questionId, studentId) {
+        return `${questionId}_${studentId}`;
+    },
+
     resetForQuestion(questionId) {
         this.pending.clear();
         this.confirmed.clear();
@@ -853,12 +857,15 @@ const CardScanner = {
         if (!s || !q) return;
         for (const st of s.students || []) {
             const ans = getStudentAnswer(s, q.id, st.id);
-            if (ans?.answer) this.confirmed.set(`${q.id}_${st.cardId}`, ans.answer);
+            if (ans?.answer) this.confirmed.set(this._lockKey(q.id, st.id), ans.answer);
         }
     },
 
-    _isLocked(cardId, questionId) {
-        return questionId && this.confirmed.has(`${questionId}_${cardId}`);
+    isStudentLocked(studentId, questionId) {
+        if (!questionId || !studentId) return false;
+        if (this.confirmed.has(this._lockKey(questionId, studentId))) return true;
+        const s = appState.session;
+        return !!getStudentAnswer(s, questionId, studentId)?.answer;
     },
 
     onQuestionChanged(questionId) {
@@ -945,7 +952,7 @@ const CardScanner = {
 
         const q = getCurrentQuestion(appState.session);
         for (const hit of hits) {
-            if (this._isLocked(hit.cardId, q?.id)) continue;
+            if (this.isStudentLocked(hit.student.id, q?.id)) continue;
             seen.add(hit.cardId);
             this._trackHit(hit);
         }
@@ -964,12 +971,9 @@ const CardScanner = {
 
         if (this.questionKey !== q.id) this.resetForQuestion(q.id);
 
-        const confirmKey = `${q.id}_${hit.cardId}`;
-        if (this.confirmed.has(confirmKey)) return;
-
-        const existing = getStudentAnswer(appState.session, q.id, hit.student.id);
-        if (existing?.answer) {
-            this.confirmed.set(confirmKey, existing.answer);
+        const confirmKey = this._lockKey(q.id, hit.student.id);
+        if (this.isStudentLocked(hit.student.id, q.id)) {
+            this.confirmed.set(confirmKey, getStudentAnswer(appState.session, q.id, hit.student.id)?.answer || true);
             this.pending.delete(hit.cardId);
             return;
         }
@@ -1005,10 +1009,12 @@ function onCardScanned(cardId, orientation, knownStudent = null) {
         return;
     }
 
+    const q = getCurrentQuestion(s);
+    if (CardScanner.isStudentLocked(student.id, q?.id)) return;
+
     const result = recordAnswer(s, student.id, cardId, orientation);
     if (!result.ok) return;
 
-    const q = getCurrentQuestion(s);
     SyncEngine.send({
         type: 'ANSWER_SCANNED',
         studentId: student.id,
@@ -1018,7 +1024,7 @@ function onCardScanned(cardId, orientation, knownStudent = null) {
         session: getSessionSnapshot()
     });
 
-    CardScanner.confirmed.set(`${q?.id}_${cardId}`, orientation);
+    CardScanner.confirmed.set(CardScanner._lockKey(q?.id, student.id), orientation);
 
     const tag = $('#scan-last-flash');
     if (tag) {
@@ -1344,7 +1350,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
     ScanOrientation.init(() => {
         CardScanner.pending.clear();
-        CardScanner.confirmed.clear();
     });
     updateOrientationUI();
     const params = new URLSearchParams(location.search);
