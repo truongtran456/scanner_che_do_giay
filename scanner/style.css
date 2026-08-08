@@ -8,8 +8,7 @@
     --red: #ff4444;
     --dark: #0a0a0f;
     --panel: rgba(8, 12, 10, 0.88);
-    --font-d: 'Fredoka', sans-serif;
-    --font: 'Nunito', sans-serif;
+    --font: 'Quicksand', 'Segoe UI', sans-serif;
     --dock-h: 72px;
     --scan-cam-pct: 85%;
     --scan-side-pct: 15%;
@@ -31,7 +30,7 @@ body {
 .btn {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 0.75rem 1.25rem; border: none; border-radius: 14px;
-    font-family: var(--font-d); font-weight: 700; font-size: 1rem;
+    font-family: var(--font); font-weight: 700; font-size: 1rem;
     cursor: pointer; transition: transform 0.12s;
 }
 .btn:active { transform: scale(0.97); }
@@ -101,12 +100,12 @@ body {
 }
 .wait-icon { font-size: 3.5rem; }
 .wait-card h1 {
-    font-family: var(--font-d); font-size: 1.6rem;
+    font-family: var(--font); font-size: 1.6rem;
     color: var(--lime); letter-spacing: 0.06em;
 }
 .wait-sub { color: rgba(255,255,255,0.5); font-weight: 600; font-size: 0.9rem; }
 .wait-session {
-    font-family: var(--font-d); font-size: 1.2rem; font-weight: 800;
+    font-family: var(--font); font-size: 1.2rem; font-weight: 800;
     color: var(--cyan); letter-spacing: 0.12em;
     padding: 0.35rem 1rem; border-radius: 8px;
     border: 1px solid rgba(0,255,245,0.35);
@@ -281,7 +280,7 @@ body {
     padding: 0.55rem 0.75rem;
     padding-top: max(0.55rem, env(safe-area-inset-top));
     background: linear-gradient(180deg, rgba(40, 32, 8, 0.92), rgba(28, 22, 6, 0.85));
-    color: #ffe8a3; font-family: var(--font-d); font-weight: 700;
+    color: #ffe8a3; font-family: var(--font); font-weight: 700;
     font-size: 0.82rem; text-align: center;
     border-bottom: 1px solid rgba(255, 149, 0, 0.45);
 }
@@ -308,7 +307,7 @@ body {
     z-index: 50; background: rgba(0,0,0,0.75);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 1rem;
-    font-family: var(--font-d); font-weight: 700; color: var(--lime);
+    font-family: var(--font); font-weight: 700; color: var(--lime);
 }
 .camera-loading-ring {
     width: 48px; height: 48px;
@@ -340,7 +339,7 @@ body {
 .scan-frame-guide::after { top: -2px; right: -2px; border-left: none; border-bottom: none; }
 .scan-frame-tip {
     position: absolute; bottom: 2%; left: 50%; transform: translateX(-50%);
-    font-family: var(--font-d); font-size: 0.78rem; font-weight: 700;
+    font-family: var(--font); font-size: 0.78rem; font-weight: 700;
     color: rgba(255,255,255,0.75); white-space: nowrap;
     background: var(--panel); padding: 0.3rem 0.75rem; border-radius: 999px; opacity: 0.85;
 }
@@ -350,7 +349,7 @@ body {
     bottom: calc(var(--dock-h) + 0.5rem + env(safe-area-inset-bottom));
     z-index: 18; background: rgba(57, 255, 20, 0.92); color: var(--dark);
     padding: 0.65rem 1rem; border-radius: 12px;
-    font-family: var(--font-d); font-weight: 800; font-size: 1rem;
+    font-family: var(--font); font-weight: 800; font-size: 1rem;
     text-align: center; box-shadow: 0 4px 24px rgba(57,255,20,0.5);
     animation: flashIn 0.25s ease-out;
 }
@@ -370,7 +369,7 @@ body {
     display: flex; flex-direction: column; align-items: center; gap: 0.65rem;
 }
 .orientation-prompt h2 {
-    font-family: var(--font-d); font-size: 1.25rem; color: #ff6b6b;
+    font-family: var(--font); font-size: 1.25rem; color: #ff6b6b;
 }
 .orientation-prompt p {
     font-size: 0.92rem; font-weight: 600; color: rgba(255,255,255,0.78); line-height: 1.5;
@@ -428,7 +427,7 @@ body {
 }
 
 .scan-orient-pill {
-    font-family: var(--font-d); font-weight: 800; font-size: 0.65rem;
+    font-family: var(--font); font-weight: 800; font-size: 0.65rem;
     padding: 0.2rem 0.45rem; border-radius: 6px; letter-spacing: 0.04em;
     white-space: nowrap;
 }
@@ -447,12 +446,12 @@ body {
 }
 
 .scan-hud-q {
-    font-family: var(--font-d); font-weight: 800; font-size: 0.95rem;
+    font-family: var(--font); font-weight: 800; font-size: 0.95rem;
     color: var(--lime); white-space: nowrap;
     background: var(--panel); padding: 0.35rem 0.65rem;
     border-radius: 8px; border: 1px solid rgba(57,255,20,0.3);
 }
-.scan-hud-count { font-family: var(--font-d); font-weight: 800; font-size: 0.88rem; color: #fff; white-space: nowrap; }
+.scan-hud-count { font-family: var(--font); font-weight: 800; font-size: 0.88rem; color: #fff; white-space: nowrap; }
 .scan-progress-wrap {
     flex: 1; height: 6px; background: rgba(255,255,255,0.15);
     border-radius: 999px; overflow: hidden; min-width: 40px;
@@ -484,11 +483,11 @@ body {
     color: var(--cyan); cursor: pointer; font-family: var(--font);
 }
 .scan-dock-label { font-size: 0.68rem; font-weight: 700; opacity: 0.8; }
-.scan-side-btn strong { font-family: var(--font-d); font-size: 1.35rem; color: var(--orange); line-height: 1.1; }
+.scan-side-btn strong { font-family: var(--font); font-size: 1.35rem; color: var(--orange); line-height: 1.1; }
 .scan-side-lock {
     flex: 1; background: linear-gradient(135deg, var(--magenta), #aa00aa);
     border: none; border-radius: 14px; color: #fff;
-    font-family: var(--font-d); font-weight: 800; font-size: 1.05rem;
+    font-family: var(--font); font-weight: 800; font-size: 1.05rem;
     cursor: pointer; box-shadow: 0 0 20px rgba(255,0,255,0.4);
 }
 .scan-side-lock.ready {
@@ -500,7 +499,7 @@ body {
     50% { box-shadow: 0 0 28px rgba(57,255,20,0.7); }
 }
 
-.scan-result-summary { font-family: var(--font-d); font-weight: 700; font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--lime); }
+.scan-result-summary { font-family: var(--font); font-weight: 700; font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--lime); }
 .scan-result-bars .result-bar-row {
     display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;
     font-size: 0.82rem; font-weight: 700;
@@ -720,7 +719,7 @@ body {
 .drawer-tab {
     flex: 1; padding: 0.5rem 0.35rem; border: none; border-radius: 10px;
     background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55);
-    font-family: var(--font-d); font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    font-family: var(--font); font-size: 0.78rem; font-weight: 700; cursor: pointer;
 }
 .drawer-tab.active { background: rgba(57,255,20,0.18); color: var(--lime); border: 1px solid rgba(57,255,20,0.35); }
 .drawer-tab span { display: inline-block; min-width: 1.2em; background: rgba(0,0,0,0.3); padding: 0.1rem 0.35rem; border-radius: 6px; margin-left: 0.15rem; }
@@ -740,7 +739,7 @@ body {
 .scan-student-row .ans-badge {
     width: 28px; height: 28px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-d); font-weight: 800;
+    font-family: var(--font); font-weight: 800;
     background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);
 }
 .scan-student-row.done .ans-badge { background: var(--lime); color: var(--dark); }
@@ -750,7 +749,7 @@ body {
 .scanner-reconnect {
     position: absolute; inset: 0; z-index: 100; background: rgba(0,0,0,0.9);
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
-    font-family: var(--font-d);
+    font-family: var(--font);
 }
 .scanner-reconnect p:first-child { color: var(--red); font-size: 1.2rem; font-weight: 800; }
 
@@ -763,7 +762,7 @@ body {
     border-radius: 16px; padding: 1.25rem; border: 1px solid rgba(57,255,20,0.25);
     max-height: 80vh; overflow-y: auto;
 }
-.modal-box h3 { font-family: var(--font-d); color: var(--lime); margin-bottom: 0.75rem; }
+.modal-box h3 { font-family: var(--font); color: var(--lime); margin-bottom: 0.75rem; }
 .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end; }
 .menu-list { list-style: none; }
 .menu-list li { margin-bottom: 0.35rem; }
@@ -775,7 +774,7 @@ body {
 .menu-list button.danger { color: var(--red); }
 .choosers-list { max-height: 50vh; overflow-y: auto; }
 .chooser-group { margin-bottom: 0.75rem; }
-.chooser-group h4 { font-family: var(--font-d); margin-bottom: 0.25rem; }
+.chooser-group h4 { font-family: var(--font); margin-bottom: 0.25rem; }
 .chooser-group.correct h4 { color: var(--lime); }
 .chooser-group ul { list-style: none; font-size: 0.88rem; color: rgba(255,255,255,0.75); }
 
@@ -785,6 +784,6 @@ body {
 }
 .toast {
     background: var(--panel); color: var(--lime); padding: 0.55rem 1rem; border-radius: 999px;
-    font-size: 0.82rem; font-weight: 700; font-family: var(--font-d);
+    font-size: 0.82rem; font-weight: 700; font-family: var(--font);
     border: 1px solid rgba(57,255,20,0.35); white-space: nowrap;
 }
