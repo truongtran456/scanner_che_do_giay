@@ -184,6 +184,18 @@ body {
 .portrait-block p { font-weight: 700; font-size: 0.95rem; color: #ffcc80; line-height: 1.45; }
 .portrait-block p strong { color: var(--orange); }
 .portrait-block-sub { font-size: 0.82rem !important; color: rgba(255,255,255,0.6) !important; margin-top: 0.25rem; }
+.orient-guide-warn {
+    margin-top: 0.65rem; padding: 0.55rem 0.65rem; border-radius: 10px;
+    font-size: 0.8rem !important; font-weight: 700 !important; line-height: 1.45;
+    color: #ffc9c9 !important;
+    background: rgba(255, 59, 48, 0.12);
+    border: 1px solid rgba(255, 59, 48, 0.35);
+}
+.guide-tag {
+    display: inline-block; margin-left: 0.25rem; padding: 0.1rem 0.45rem;
+    border-radius: 999px; font-size: 0.72rem; font-weight: 800;
+    color: #1a2e0a; background: var(--lime); vertical-align: middle;
+}
 
 .scanner-view {
     position: relative; background: #000;
@@ -225,6 +237,24 @@ body {
     color: #ffe8a3; font-family: var(--font-d); font-weight: 700;
     font-size: 0.82rem; text-align: center;
     border-bottom: 1px solid rgba(255, 149, 0, 0.45);
+}
+.scan-portrait-banner.warn {
+    background: linear-gradient(180deg, rgba(48, 12, 12, 0.95), rgba(32, 8, 8, 0.9));
+    color: #ffd0d0;
+    border-bottom-color: rgba(255, 59, 48, 0.55);
+}
+.scanner-view.scan-locked-sideways .scan-frame-guide {
+    border-color: rgba(255, 59, 48, 0.75);
+    animation: frameWarn 1.2s ease-in-out infinite;
+}
+@keyframes frameWarn {
+    0%, 100% { box-shadow: 0 0 0 9999px rgba(0,0,0,0.35), 0 0 0 0 rgba(255, 59, 48, 0.2); }
+    50% { box-shadow: 0 0 0 9999px rgba(0,0,0,0.35), 0 0 18px 2px rgba(255, 59, 48, 0.45); }
+}
+.scan-orient-pill.warn {
+    background: rgba(255, 59, 48, 0.22) !important;
+    color: #ffb4b4 !important;
+    border-color: rgba(255, 59, 48, 0.55) !important;
 }
 
 .camera-loading {
@@ -293,7 +323,7 @@ body {
     display: flex; flex-direction: column; align-items: center; gap: 0.65rem;
 }
 .orientation-prompt h2 {
-    font-family: var(--font-d); font-size: 1.25rem; color: var(--orange);
+    font-family: var(--font-d); font-size: 1.25rem; color: #ff6b6b;
 }
 .orientation-prompt p {
     font-size: 0.92rem; font-weight: 600; color: rgba(255,255,255,0.78); line-height: 1.5;
@@ -301,11 +331,11 @@ body {
 .orientation-prompt p strong { color: var(--lime); }
 .orientation-sub { font-size: 0.82rem !important; color: rgba(255,255,255,0.55) !important; }
 .orientation-phone-icon {
-    font-size: 3rem; animation: rotatePhoneHint 2.2s ease-in-out infinite;
+    font-size: 3rem; animation: warnPulse 1.4s ease-in-out infinite;
 }
-@keyframes rotatePhoneHint {
-    0%, 100% { transform: rotate(0deg); }
-    35%, 65% { transform: rotate(90deg); }
+@keyframes warnPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.08); opacity: 0.85; }
 }
 
 /* === Sidebar — portrait: HUD trên + dock dưới (như cũ) === */

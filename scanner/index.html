@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
     <div id="app">
@@ -21,7 +21,7 @@
                 <p class="wait-sub">Máy quét giáo viên</p>
                 <p id="wait-session" class="wait-session"></p>
                 <p id="wait-status" class="wait-status">Đang kết nối...</p>
-                <p class="wait-orient-tip">📱 Gợi ý: <strong>xoay ngang</strong> máy để quét chính xác hơn</p>
+                <p class="wait-orient-tip">📱 <strong>Cầm dọc máy</strong> để quét · Hoặc mở khóa xoay rồi xoay ngang</p>
                 <div class="wait-spinner"></div>
             </div>
         </section>
@@ -32,15 +32,17 @@
                 <div class="wait-icon">📷</div>
                 <h1>Sẵn sàng quét!</h1>
                 <p id="camera-prompt-meta" class="wait-status"></p>
-                <div id="camera-portrait-block" class="portrait-block">
-                    <div class="portrait-block-icon" aria-hidden="true">📱↻</div>
-                    <p><strong>Gợi ý: xoay ngang điện thoại / iPad</strong></p>
-                    <p class="portrait-block-sub">Quét khi cầm dọc có thể <strong>sai đáp án</strong>. Vẫn có thể bật camera và thử ngay.</p>
+                <div id="camera-portrait-block" class="portrait-block orient-guide-block">
+                    <div class="portrait-block-icon" aria-hidden="true">📱</div>
+                    <p><strong>Cách 1 — Cầm dọc máy</strong> <span class="guide-tag">khuyên dùng</span></p>
+                    <p class="portrait-block-sub">Cách 2 — Mở <strong>khóa xoay màn hình</strong> (Control Center / Trung tâm điều khiển) rồi xoay ngang</p>
+                    <p class="orient-guide-warn">⚠️ <strong>Chưa mở khóa xoay</strong> → chỉ quét được khi <strong>cầm dọc máy</strong> (cầm ngang sẽ không quét)</p>
                 </div>
                 <ul class="camera-tips">
-                    <li><strong>Nên xoay ngang</strong> để quét chính xác nhất</li>
-                    <li>Cho phép truy cập <strong>Camera</strong></li>
-                    <li>Học sinh giơ thẻ dọc — chữ đáp án chọn ở <strong>trên cùng</strong></li>
+                    <li><strong>Chưa mở khóa xoay</strong> → chỉ quét được khi <strong>cầm dọc máy</strong></li>
+                    <li><strong>Đã mở khóa xoay</strong> → có thể xoay ngang để quét</li>
+                    <li>Cho phép truy cập <strong>Camera</strong> (và <strong>Cảm biến chuyển động</strong> nếu được hỏi)</li>
+                    <li>Học sinh giơ <strong>thẻ dọc</strong> — chữ đáp án chọn ở <strong>trên cùng</strong></li>
                     <li>Quét liên tục nhiều học sinh</li>
                 </ul>
                 <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera">▶ Bật camera &amp; quét</button>
@@ -61,21 +63,21 @@
                     </div>
 
                     <div id="scan-portrait-banner" class="scan-portrait-banner hidden" aria-live="polite">
-                        💡 Gợi ý: xoay ngang máy để quét chính xác hơn
+                        📱 Cầm dọc máy để quét · Hoặc mở khóa xoay rồi xoay ngang
                     </div>
 
                     <div id="orientation-prompt" class="orientation-prompt hidden" aria-live="polite">
                         <div class="orientation-prompt-inner">
-                            <div class="orientation-phone-icon" aria-hidden="true">📱</div>
-                            <h2>Xoay ngang máy để quét</h2>
-                            <p>Thẻ có <strong>4 hướng = 4 đáp án</strong>.<br>Cầm dọc → <strong>sai đáp án</strong>.</p>
-                            <p class="orientation-sub">Học sinh giơ thẻ <strong>dọc</strong>, đáp án ở trên.</p>
+                            <div class="orientation-phone-icon" aria-hidden="true">⚠️</div>
+                            <h2>Chưa mở khóa xoay — không quét được</h2>
+                            <p>Bạn đang <strong>cầm ngang</strong> nhưng màn hình vẫn <strong>khóa dọc</strong>.</p>
+                            <p class="orientation-sub"><strong>Cách 1:</strong> Cầm dọc máy lại → quét bình thường<br><strong>Cách 2:</strong> Mở khóa xoay (Control Center) rồi xoay ngang</p>
                         </div>
                     </div>
 
                     <div class="scan-frame-zone">
                         <div class="scan-frame-guide" aria-hidden="true"></div>
-                        <p id="scan-frame-tip" class="scan-frame-tip">Giơ thẻ dọc — đáp án ở trên cùng</p>
+                        <p id="scan-frame-tip" class="scan-frame-tip">Cầm dọc máy · Giơ thẻ dọc — đáp án ở trên cùng</p>
                     </div>
 
                     <div id="scan-last-flash" class="scan-last-flash hidden" aria-live="polite"></div>
@@ -154,6 +156,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script src="app.js?v=17"></script>
+    <script src="app.js?v=19"></script>
 </body>
 </html>
