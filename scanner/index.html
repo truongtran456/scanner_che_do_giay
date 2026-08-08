@@ -3,73 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
-    <title>Quét thẻ — Chế độ giấy</title>
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Quét thẻ — Thẻ Xoay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- Chờ kết nối presenter -->
+        <!-- Chờ kết nối -->
         <section id="view-waiting" class="view active">
             <div class="wait-card">
-                <div class="wait-icon">📷</div>
-                <h1>Máy quét thẻ</h1>
+                <div class="wait-icon">📡</div>
+                <h1>THẺ XOAY</h1>
+                <p class="wait-sub">Máy quét giáo viên</p>
                 <p id="wait-session" class="wait-session"></p>
-                <p id="wait-status" class="wait-status">Đang kết nối tới máy chiếu...</p>
+                <p id="wait-status" class="wait-status">Đang kết nối...</p>
+                <p class="wait-orient-tip">📱 Sau khi kết nối: <strong>xoay ngang</strong> máy để quét chính xác</p>
                 <div class="wait-spinner"></div>
-                <p class="wait-hint">Mở link từ mã QR trên máy tính giáo viên.<br>Cần internet để đồng bộ realtime.</p>
             </div>
         </section>
 
-        <!-- Camera quét thẻ -->
+        <!-- Bật camera (1 lần — tránh lỗi quyền) -->
+        <section id="view-camera-prompt" class="view">
+            <div class="wait-card camera-prompt-card">
+                <div class="wait-icon">📷</div>
+                <h1>Sẵn sàng quét!</h1>
+                <p id="camera-prompt-meta" class="wait-status"></p>
+                <ul class="camera-tips">
+                    <li><strong>Xoay ngang</strong> điện thoại / iPad trước khi quét</li>
+                    <li>Cho phép truy cập <strong>Camera</strong></li>
+                    <li>Học sinh giơ thẻ dọc — chữ đáp án chọn ở <strong>trên cùng</strong></li>
+                    <li>Quét liên tục nhiều học sinh</li>
+                </ul>
+                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera">▶ Bật camera &amp; quét</button>
+            </div>
+        </section>
+
+        <!-- Quét thẻ -->
         <section id="view-scanner" class="view scanner-view">
             <video id="scanner-video" autoplay playsinline muted></video>
             <canvas id="scanner-canvas" class="hidden"></canvas>
-            <div class="scanner-overlay-top">
-                <span class="scan-pill" id="scan-q-pill">📋 Câu —</span>
-                <span class="scan-pill" id="scan-count-pill">✓ 0/0</span>
-                <button class="scan-pill scan-pill-danger" id="btn-end-session-top" type="button">● Kết thúc</button>
+
+            <div id="camera-loading" class="camera-loading hidden">
+                <div class="camera-loading-ring"></div>
+                <p>Đang mở camera...</p>
             </div>
-            <div id="scan-student-tag" class="scan-student-tag hidden"></div>
-            <div id="scan-toast" class="scan-toast hidden"></div>
-            <div id="scan-hint" class="scan-hint hidden"></div>
+
+            <!-- HUD trên — 1 dòng -->
+            <header class="scan-hud-top">
+                <div class="scan-hud-left">
+                    <span id="scan-q-pill" class="scan-hud-q">Câu —</span>
+                </div>
+                <div class="scan-hud-center">
+                    <div class="scan-progress-wrap"><div id="scan-progress-fill" class="scan-progress-fill"></div></div>
+                    <span id="scan-count-pill" class="scan-hud-count">0/0</span>
+                </div>
+                <div class="scan-hud-right">
+                    <span id="scan-conn-dot" class="scan-conn-dot online" title="Đã kết nối"></span>
+                    <button type="button" class="scan-hud-menu" id="btn-scan-menu" aria-label="Menu">☰</button>
+                </div>
+            </header>
+
+            <!-- Cảnh báo xoay ngang -->
+            <div id="orientation-prompt" class="orientation-prompt hidden" aria-live="polite">
+                <div class="orientation-prompt-inner">
+                    <div class="orientation-phone-icon" aria-hidden="true">📱</div>
+                    <h2>Xoay ngang máy để quét</h2>
+                    <p>Thẻ có 4 hướng — 4 đáp án khác nhau.<br>Quét khi <strong>chiều ngang</strong> mới đúng đáp án.</p>
+                    <p class="orientation-sub">Học sinh vẫn giơ thẻ <strong>dọc</strong>, chữ đáp án ở trên.</p>
+                </div>
+            </div>
+
+            <!-- Vùng quét lớn -->
+            <div class="scan-frame-zone">
+                <div class="scan-frame-guide" aria-hidden="true"></div>
+                <p id="scan-frame-tip" class="scan-frame-tip">Giơ thẻ dọc — đáp án ở trên cùng</p>
+            </div>
+
+            <!-- Flash quét — không che camera -->
+            <div id="scan-last-flash" class="scan-last-flash hidden" aria-live="polite"></div>
+
+            <!-- Dock dưới — gọn -->
+            <footer class="scan-dock" id="scanner-active">
+                <button type="button" class="scan-dock-btn" id="btn-toggle-drawer">
+                    <span class="scan-dock-label">Chưa quét</span>
+                    <strong id="scan-pending-count">0</strong>
+                </button>
+                <button type="button" class="scan-dock-lock" id="btn-lock-question">🔒 CHỐT CÂU</button>
+            </footer>
+
+            <!-- Kết quả câu -->
+            <footer class="scan-dock scan-dock-result hidden" id="scanner-result">
+                <div class="scan-result-compact">
+                    <p id="scan-result-summary" class="scan-result-summary"></p>
+                    <div id="scan-result-bars" class="scan-result-bars"></div>
+                </div>
+                <div class="scan-result-actions">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-show-choosers">👁 Ai chọn gì</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-next-q-result">Câu tiếp →</button>
+                </div>
+            </footer>
+
+            <!-- Drawer danh sách HS -->
             <div id="scanner-drawer" class="scanner-drawer hidden">
-                <div id="scanner-answered-list" class="scanner-drawer-list"></div>
-            </div>
-            <div class="scanner-overlay-bottom">
-                <button class="scan-drawer-btn" id="btn-toggle-drawer" type="button">👥 <span id="scan-answered-count">0/0 đã trả lời</span> ▲</button>
-                <div id="scanner-active">
-                    <button class="btn-lock-scan" id="btn-lock-question" type="button">🔒 Chốt câu · Hiện đáp án</button>
+                <div class="drawer-handle"></div>
+                <div class="drawer-tabs">
+                    <button type="button" class="drawer-tab active" data-tab="pending">⏳ Chưa quét <span id="tab-pending-n">0</span></button>
+                    <button type="button" class="drawer-tab" data-tab="done">✓ Đã quét <span id="tab-done-n">0</span></button>
+                    <button type="button" class="drawer-tab" data-tab="all">Tất cả</button>
                 </div>
-                <div id="scanner-result" class="scanner-result-panel hidden">
-                    <div id="scan-result-header"></div>
-                    <div id="scan-result-bars"></div>
-                    <button class="btn btn-secondary btn-block" id="btn-show-choosers" type="button">👁 Hiển thị người chọn</button>
-                    <button class="btn btn-primary btn-block" id="btn-next-q-result" type="button">Sang câu tiếp →</button>
-                </div>
+                <div id="scanner-student-list" class="scanner-student-list"></div>
             </div>
+
             <div id="scanner-reconnect" class="scanner-reconnect hidden">
-                <p>🔴 Mất kết nối</p>
-                <p>Đang kết nối lại...</p>
+                <p>🔴 Mất kết nối máy chiếu</p>
+                <p>Đang thử lại...</p>
             </div>
         </section>
 
-        <!-- Phiên kết thúc -->
         <section id="view-ended" class="view">
             <div class="wait-card ended">
-                <div class="wait-icon">✅</div>
-                <h1>Phiên đã kết thúc</h1>
-                <p>Xem kết quả trên màn hình máy chiếu.</p>
-                <p class="wait-hint">Bạn có thể đóng tab này.</p>
+                <div class="wait-icon">🎉</div>
+                <h1>Phiên kết thúc!</h1>
+                <p>Xem bảng xếp hạng trên máy chiếu.</p>
             </div>
         </section>
 
-        <!-- Thiếu mã phiên -->
         <section id="view-no-session" class="view">
             <div class="wait-card error">
                 <div class="wait-icon">⚠️</div>
                 <h1>Thiếu mã phiên</h1>
-                <p>Quét mã QR trên màn hình máy tính giáo viên để mở đúng link.</p>
+                <p>Quét mã QR trên máy tính giáo viên.</p>
             </div>
         </section>
     </div>
@@ -79,7 +146,6 @@
     </div>
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="app.js"></script>
 </body>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Thẻ Xoay — Quét thẻ học sinh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- SPLASH -->
+        <section id="view-splash" class="view view-full active">
+            <div class="splash-decor" aria-hidden="true">
+                <span class="splash-bubble b1"></span>
+                <span class="splash-bubble b2"></span>
+                <span class="splash-bubble b3"></span>
+                <span class="splash-bubble b4"></span>
+                <span class="splash-bubble b5"></span>
+            </div>
+            <div class="splash-content">
+                <div class="splash-logo-ring">
+                    <div class="splash-logo">🎯</div>
+                </div>
+                <h1>Thẻ Xoay</h1>
+                <p class="splash-sub">Xoay thẻ · Giơ lên · Trả lời vui!</p>
+                <button class="btn btn-primary btn-xl btn-glow" id="btn-enter-app">🚀 Bắt đầu chơi</button>
+            </div>
+        </section>
+
+        <!-- ADMIN SHELL (sidebar + content) -->
+        <div id="admin-shell" class="admin-shell hidden">
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <strong>Thẻ Xoay</strong>
+                    <span>(Xoay &amp; giơ thẻ)</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <button class="sidebar-item active" data-nav="classes">🏠 Lớp học</button>
+                    <button class="sidebar-item" data-nav="question-sets">📋 Bộ câu hỏi</button>
+                    <button class="sidebar-item" data-nav="history">📊 Lịch sử quét</button>
+                    <button class="sidebar-item" data-nav="statistics">📈 Thống kê</button>
+                    <button class="sidebar-item" data-nav="print-cards">🖨 In bộ thẻ</button>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                <!-- QUẢN LÝ LỚP -->
+                <section id="view-classes" class="view admin-view active">
+                    <header class="admin-header">
+                        <h2>🏫 Quản lý lớp</h2>
+                        <button class="btn btn-primary" id="btn-add-class">+ Tạo lớp mới</button>
+                    </header>
+                    <div id="class-list" class="class-grid"></div>
+                </section>
+
+                <!-- TẠO/SỬA LỚP -->
+                <section id="view-class-form" class="view admin-view">
+                    <header class="admin-header">
+                        <button class="btn-text back-btn" data-nav="classes">← Quay lại</button>
+                        <h2 id="class-form-title">🏫 Tạo lớp mới</h2>
+                    </header>
+                    <form id="class-form" class="form-card">
+                        <label class="field-label">Tên lớp</label>
+                        <input type="text" id="class-name" class="field-input" placeholder="Lớp 6B" required>
+                        <label class="field-label">Danh sách học sinh <small>(mỗi dòng 1 tên · hoặc tải file)</small></label>
+                        <div class="import-students-bar">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-import-students">📥 Tải Excel / CSV / TXT</button>
+                            <span class="import-hint">Cột đầu tiên là tên · hỗ trợ .xlsx .csv .txt</span>
+                            <input type="file" id="file-import-students" accept=".xlsx,.xls,.csv,.txt" class="hidden">
+                        </div>
+                        <div class="student-editor">
+                            <div id="card-labels-col" class="card-labels-col"></div>
+                            <textarea id="class-students" class="student-names-input" rows="14" placeholder="Nguyễn Minh Khang"></textarea>
+                        </div>
+                        <p class="form-note">Khi thay đổi danh sách, số thẻ của các học sinh sẽ thay đổi — nhớ kiểm tra lại.</p>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-text" data-nav="classes">HỦY</button>
+                            <button type="submit" class="btn btn-primary" id="btn-save-class">TẠO LỚP</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- IN THẺ -->
+                <section id="view-print-cards" class="view admin-view">
+                    <header class="admin-header">
+                        <h2>🖨 Bộ thẻ học sinh</h2>
+                        <div class="header-actions">
+                            <select id="print-class-select" class="field-input field-input-sm"></select>
+                        </div>
+                    </header>
+                    <p id="print-class-name" class="subtitle"></p>
+                    <p class="print-cards-note">Mỗi học sinh = <strong>1 thẻ</strong> (A trên · B phải · C dưới · D trái). Học sinh <strong>xoay thẻ sao cho chữ đáp án chọn nằm ở trên cùng</strong> rồi giơ lên — máy quét đọc đáp án theo chữ ở trên.</p>
+                    <div id="cards-loading" class="cards-loading hidden">
+                        <span class="spinner"></span> Đang tạo bộ thẻ...
+                    </div>
+                    <div id="cards-preview" class="cards-grid cards-preview-grid"></div>
+                </section>
+
+                <!-- BỘ CÂU HỎI -->
+                <section id="view-question-sets" class="view admin-view">
+                    <header class="admin-header">
+                        <h2>📋 Bộ câu hỏi</h2>
+                        <button class="btn btn-primary" id="btn-add-qset">+ Tạo bộ mới</button>
+                    </header>
+                    <div id="qset-list" class="class-grid"></div>
+                </section>
+
+                <!-- TẠO/SỬA BỘ CÂU HỎI -->
+                <section id="view-qset-form" class="view admin-view">
+                    <header class="admin-header">
+                        <button class="btn-text back-btn" data-nav="question-sets">← Quay lại</button>
+                        <h2 id="qset-form-title">Bộ câu hỏi</h2>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" id="btn-quick-import">⚡ Nhập nhanh</button>
+                            <button class="btn btn-secondary btn-sm" id="btn-import-json">Nhập JSON</button>
+                            <button class="btn btn-secondary btn-sm" id="btn-export-json">Xuất JSON</button>
+                        </div>
+                    </header>
+                    <form id="qset-meta-form" class="form-inline">
+                        <input type="text" id="qset-name" class="field-input" placeholder="Tên bộ câu hỏi" required>
+                        <button type="submit" class="btn btn-primary btn-sm">Lưu tên</button>
+                    </form>
+                    <div id="question-list" class="question-list"></div>
+                    <button class="btn btn-primary btn-block" id="btn-add-question">+ Thêm câu hỏi</button>
+                </section>
+
+                <!-- BẮT ĐẦU PHIÊN -->
+                <section id="view-session-start" class="view admin-view">
+                    <div class="session-start-card">
+                        <div class="session-icon">🎯</div>
+                        <h2>Bắt đầu ôn tập</h2>
+                        <p>Lớp: <strong id="ss-class"></strong></p>
+                        <p><span id="ss-students"></span> học sinh · <span id="ss-questions"></span> câu</p>
+                        <p>Bộ: <strong id="ss-qset"></strong></p>
+                        <button class="btn btn-primary btn-xl" id="btn-start-session">Bắt đầu phiên</button>
+                    </div>
+                </section>
+
+                <!-- LỊCH SỬ -->
+                <section id="view-history" class="view admin-view">
+                    <header class="admin-header"><h2>📊 Lịch sử quét</h2></header>
+                    <div id="history-list" class="class-grid"></div>
+                </section>
+
+                <!-- THỐNG KÊ -->
+                <section id="view-statistics" class="view admin-view">
+                    <header class="admin-header"><h2>📈 Thống kê tổng hợp</h2></header>
+                    <div id="stats-content"></div>
+                </section>
+
+                <!-- PHÂN TÍCH -->
+                <section id="view-analytics" class="view admin-view">
+                    <header class="admin-header">
+                        <button class="btn-text" id="btn-analytics-back">← Quay lại</button>
+                        <h2>📊 Phân tích</h2>
+                    </header>
+                    <div class="analytics-tabs">
+                        <button class="tab-btn active" data-tab="students">Học sinh</button>
+                        <button class="tab-btn" data-tab="questions">Câu hỏi</button>
+                    </div>
+                    <div id="analytics-students" class="analytics-panel"></div>
+                    <div id="analytics-questions" class="analytics-panel hidden"></div>
+                </section>
+            </main>
+        </div>
+
+        <!-- KẾT NỐI -->
+        <section id="view-connect" class="view view-full view-connect-dark">
+            <div class="connect-wrap">
+                <header class="connect-header">
+                    <h1>Thẻ Xoay</h1>
+                    <p id="connect-meta" class="connect-meta"></p>
+                </header>
+                <div class="connect-grid">
+                    <div class="connect-left">
+                        <div id="connect-qr" class="qr-box">
+                            <p id="connect-qr-placeholder" class="qr-placeholder hidden">Đang tạo mã QR...</p>
+                        </div>
+                        <div id="display-session-id" class="session-code-badge"></div>
+                    </div>
+                    <div class="connect-right">
+                        <h2>Quét mã QR bằng điện thoại</h2>
+                        <p class="connect-hint">Cho phép truy cập camera trên điện thoại</p>
+                        <label class="connect-link-label">Link quét:</label>
+                        <div class="link-copy-row">
+                            <input type="text" id="connect-link" class="link-input" readonly>
+                            <button class="btn btn-copy" id="btn-copy-link">📋 CHÉP</button>
+                        </div>
+                        <div id="connect-status" class="connect-status-bar waiting">
+                            <span class="spinner"></span> Đang chờ điện thoại quét QR...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRESENTER -->
+        <section id="view-presenter" class="view view-full presenter-view">
+            <header class="pres-header">
+                <div class="pres-header-left">
+                    <span class="pres-title">Thẻ Xoay</span>
+                    <span id="pres-class-badge" class="pres-class-badge"></span>
+                    <span id="pres-scanner-live" class="pres-scanner-live hidden">📱 Đang quét</span>
+                    <button class="btn btn-header-link" id="btn-reconnect-phone">📱 Kết nối lại</button>
+                </div>
+                <div class="pres-header-center">
+                    <button class="btn btn-header" id="btn-font-down">A− Giảm cỡ chữ</button>
+                    <span id="pres-font-size" class="pres-font-size">32</span>
+                    <button class="btn btn-header" id="btn-font-up">A+ Tăng cỡ chữ</button>
+                    <button class="btn btn-header btn-nav" id="btn-pres-prev">‹ CÂU TRƯỚC</button>
+                    <button class="btn btn-header btn-nav" id="btn-pres-next">CÂU TIẾP ›</button>
+                </div>
+                <div class="pres-header-right">
+                    <button class="btn btn-header-danger" id="btn-pres-end">KẾT THÚC PHIÊN</button>
+                    <button class="btn btn-header" id="btn-fullscreen">⛶ TOÀN MÀN HÌNH</button>
+                </div>
+            </header>
+            <div id="presenter-disconnect" class="disconnect-banner hidden">⚠ Điện thoại scanner mất kết nối</div>
+            <div class="pres-layout">
+                <div class="pres-main">
+                    <div id="presenter-body" class="pres-body">
+                        <div class="pres-question-card">
+                            <h2 id="pres-question-title" class="pres-question-title"></h2>
+                            <div id="pres-question-text" class="pres-question-text"></div>
+                            <div id="pres-question-image" class="pres-question-image"></div>
+                        </div>
+                        <div id="pres-answers" class="pres-answers-grid"></div>
+                    </div>
+                    <div id="presenter-result" class="pres-result hidden">
+                        <div id="pres-correct-banner" class="pres-correct-banner"></div>
+                        <div id="pres-result-bars" class="result-bars"></div>
+                    </div>
+                </div>
+                <aside class="pres-sidebar">
+                    <div class="pres-sidebar-head">
+                        <div class="pres-progress-bar"><div id="pres-progress-fill" class="pres-progress-fill"></div></div>
+                        <span id="pres-answered">0/13 đã quét</span>
+                        <span id="pres-pending-label" class="pres-pending-label">⏳ Chưa quét</span>
+                    </div>
+                    <div id="pres-student-list" class="pres-student-list"></div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- BẢNG XẾP HẠNG -->
+        <section id="view-ranking" class="view view-full view-ranking">
+            <div class="ranking-stars" aria-hidden="true"></div>
+            <div class="ranking-screen">
+                <div class="ranking-trophy">🏆</div>
+                <h1>KẾT QUẢ ÔN TẬP</h1>
+                <p id="rank-cheer" class="rank-cheer"></p>
+                <p id="rank-meta" class="rank-meta"></p>
+                <div id="rank-podium" class="rank-podium"></div>
+                <div class="rank-table-wrap">
+                    <table id="rank-table" class="rank-table">
+                        <thead><tr><th>Hạng</th><th>Học sinh</th><th>Đúng</th><th>Sai</th><th>Không TL</th><th>Điểm</th><th>Tỷ lệ</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="ranking-actions">
+                    <button class="btn btn-secondary" id="btn-analyze-session">📊 Phân tích</button>
+                    <button class="btn btn-primary" id="btn-back-home">Về trang chủ</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div id="modal-box" class="modal-box"></div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+    <div id="print-area" class="print-area"></div>
+    <input type="file" id="file-import-json" accept=".json" class="hidden">
+
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="shared/idb-store.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
