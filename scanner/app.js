@@ -633,40 +633,56 @@ const MarkerUtil = {
 };
 
 /* ===== HƯỚNG MÀN HÌNH — chỉ quét khi xoay ngang ===== */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 const ScanOrientation = {
     _landscape: false,
     _angle: 0,
     _type: 'portrait-primary',
     _onChange: null,
     _landscapeMq: null,
+    _pollTimer: null,
 
     init(onChange) {
         this._onChange = onChange;
         this._landscapeMq = window.matchMedia('(orientation: landscape)');
         this._read();
-        const fire = () => setTimeout(() => this._handleChange(), 150);
+        const fire = () => setTimeout(() => this._handleChange(), 120);
         window.addEventListener('orientationchange', fire);
         window.addEventListener('resize', () => this._handleChange());
+        window.visualViewport?.addEventListener('resize', () => this._handleChange());
         this._landscapeMq.addEventListener?.('change', fire);
         this._landscapeMq.addListener?.(fire);
         if (screen.orientation) screen.orientation.addEventListener('change', fire);
+        // iOS Safari: orientationchange không tin cậy — poll thêm
+        if (IS_IOS) {
+            this._pollTimer = setInterval(() => this._handleChange(), 400);
+        }
         this._handleChange();
         this.tryLockLandscape();
     },
 
+    _viewport() {
+        const vv = window.visualViewport;
+        return {
+            w: Math.round(vv?.width ?? window.innerWidth),
+            h: Math.round(vv?.height ?? window.innerHeight)
+        };
+    },
+
     _read() {
+        const { w, h } = this._viewport();
         const t = screen.orientation?.type;
         if (t) {
             this._type = t;
-            this._landscape = t.startsWith('landscape');
             this._angle = screen.orientation.angle;
         } else {
-            this._landscape = this._landscapeMq
-                ? this._landscapeMq.matches
-                : window.innerWidth > window.innerHeight;
             this._angle = window.orientation || 0;
-            this._type = this._landscape ? 'landscape-primary' : 'portrait-primary';
+            this._type = w > h ? 'landscape-primary' : 'portrait-primary';
         }
+        // iPhone/iPad: tin kích thước màn hình thực (viewport) — API orientation hay lệch
+        this._landscape = w > h;
     },
 
     _handleChange() {
@@ -688,17 +704,28 @@ const ScanOrientation = {
         return this._landscape;
     },
 
-    /** Xoay khung video (độ CW) — chuẩn hoá ngang về cùng hướng đọc đúng */
+    /**
+     * iOS: camera thô (không xoay khung) + bù đáp án khi ngang.
+     * Android: xoay khung 270° trước khi decode.
+     */
     getFrameRotationDeg() {
         if (!this._landscape) return null;
+        if (IS_IOS) return null;
         if (this._type === 'landscape-secondary') return 90;
         return 270;
+    },
+
+    getOrientOffset() {
+        if (!this._landscape) return null;
+        if (!IS_IOS) return 0;
+        // iPhone ngang đọc B thay A → bù +3; ngang ngược → +1
+        return this._type === 'landscape-secondary' ? 1 : 3;
     },
 
     async tryLockLandscape() {
         try {
             if (screen.orientation?.lock) await screen.orientation.lock('landscape');
-        } catch (_) { /* iOS Safari thường không cho lock */ }
+        } catch (_) { /* iOS Safari không hỗ trợ lock */ }
     }
 };
 
@@ -714,8 +741,16 @@ function updateOrientationUI() {
     view?.classList.toggle('scan-portrait-mode', portrait && appState.cameraReady);
 
     // Overlay che toàn màn scanner khi dọc
-    $('#orientation-prompt')?.classList.toggle('hidden', landscape || !appState.cameraReady);
-    $('#scan-portrait-banner')?.classList.toggle('hidden', landscape || !appState.cameraReady);
+    const showBlock = portrait && appState.cameraReady;
+    $('#orientation-prompt')?.classList.toggle('hidden', !showBlock);
+    $('#scan-portrait-banner')?.classList.toggle('hidden', !showBlock);
+
+    const orientPill = $('#scan-orient-pill');
+    if (orientPill) {
+        orientPill.textContent = landscape ? 'NGANG ✓' : 'DỌC ⛔';
+        orientPill.classList.toggle('landscape', landscape);
+        orientPill.classList.toggle('portrait', portrait);
+    }
 
     const tip = $('#scan-frame-tip');
     if (tip) {
@@ -724,7 +759,6 @@ function updateOrientationUI() {
             : '⛔ Xoay ngang máy để quét';
     }
 
-    // Màn bật camera — chặn nút khi dọc
     const camBlock = $('#camera-portrait-block');
     const camBtn = $('#btn-start-camera');
     camBlock?.classList.toggle('hidden', landscape);
@@ -735,9 +769,7 @@ function updateOrientationUI() {
             : '▶ Bật camera (xoay ngang trước)';
     }
 
-    // Màn chờ
-    const waitTip = $('.wait-orient-tip');
-    waitTip?.classList.toggle('portrait-warn', portrait);
+    $('.wait-orient-tip')?.classList.toggle('portrait-warn', portrait);
 }
 
 function captureScanFrame(video, canvas) {
@@ -862,7 +894,14 @@ const CardScanner = {
         if (!ScanOrientation.isLandscape()) return;
         if (this.frameCount % 3 !== 0) return;
 
-        const hits = MarkerUtil.decodeAll(img.data, img.width, img.height, students);
+        const offset = ScanOrientation.getOrientOffset() || 0;
+        let hits = MarkerUtil.decodeAll(img.data, img.width, img.height, students);
+        if (offset) {
+            hits = hits.map(h => ({
+                ...h,
+                orientation: MarkerUtil.correctOrientation(h.orientation, offset)
+            }));
+        }
         const seen = new Set();
 
         for (const hit of hits) {

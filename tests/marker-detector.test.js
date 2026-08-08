@@ -299,7 +299,7 @@ console.log('\n[9] Tốc độ xử lý (mỗi khung hình 640x480)');
     check(`mỗi khung < 120ms (đo ${ms.toFixed(1)}ms)`, ms < 120, ms.toFixed(1) + 'ms');
 }
 
-console.log('\n[10] Xoay khung ngang 270° → đọc đúng như quét dọc');
+console.log('\n[10] iOS ngang: bù offset +3 (B→A), Android: xoay khung 270°');
 {
     function rotateRgba90CW(src, w, h, times) {
         let data = src, cw = w, ch = h;
@@ -320,17 +320,27 @@ console.log('\n[10] Xoay khung ngang 270° → đọc đúng như quét dọc');
         return { data, w: cw, h: ch };
     }
 
-    // mô phỏng camera ngang: thẻ A trên cùng bị đọc thành D (rot=1)
-    const raw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 180, y: 120 }], 640, 480);
-    const wrong = MarkerUtil.decodeAll(raw, 640, 480, students)[0];
-    check('camera ngang thô: đọc D (sai)', wrong?.orientation === 'D', wrong?.orientation || 'none');
+    check('iOS offset: B→A', MarkerUtil.correctOrientation('B', 3) === 'A', MarkerUtil.correctOrientation('B', 3));
+    check('iOS offset: D→A', MarkerUtil.correctOrientation('D', 1) === 'A', MarkerUtil.correctOrientation('D', 1));
 
-    const fixed = rotateRgba90CW(raw, 640, 480, 3); // 270° CW
-    const hit = MarkerUtil.decodeAll(fixed.data, fixed.w, fixed.h, students)[0];
+    // iPhone ngang: thẻ A đọc nhầm B (rot=3)
+    const iosRaw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 3, x: 180, y: 120 }], 640, 480);
+    const iosHit = MarkerUtil.decodeAll(iosRaw, 640, 480, students)[0];
+    const iosFixed = iosHit ? MarkerUtil.correctOrientation(iosHit.orientation, 3) : null;
     check(
-        'xoay khung 270° → thẻ 7 / A (đúng)',
-        hit?.cardNumber === 7 && hit?.orientation === 'A',
-        hit ? `${hit.cardNumber}/${hit.orientation}` : 'không nhận'
+        'iPhone ngang: B + offset 3 → A',
+        iosHit?.orientation === 'B' && iosFixed === 'A',
+        iosHit ? `${iosHit.orientation}→${iosFixed}` : 'none'
+    );
+
+    // Android ngang: xoay khung 270°
+    const andRaw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 180, y: 120 }], 640, 480);
+    const fixed = rotateRgba90CW(andRaw, 640, 480, 3);
+    const andHit = MarkerUtil.decodeAll(fixed.data, fixed.w, fixed.h, students)[0];
+    check(
+        'Android ngang: xoay 270° → A',
+        andHit?.cardNumber === 7 && andHit?.orientation === 'A',
+        andHit ? `${andHit.cardNumber}/${andHit.orientation}` : 'none'
     );
 }
 
