@@ -37,12 +37,12 @@
                         <div class="portrait-block-icon" aria-hidden="true">📱</div>
                         <p><strong>Cách 1 — Cầm dọc máy</strong> <span class="guide-tag">khuyên dùng</span></p>
                         <p class="portrait-block-sub">Cách 2 — Mở <strong>khóa xoay màn hình</strong> (Control Center) rồi xoay ngang</p>
-                        <p class="orient-guide-warn">⚠️ <strong>Chưa mở khóa xoay</strong> → chỉ quét khi <strong>cầm dọc</strong></p>
+                        <p class="orient-guide-warn">⚠️ <strong>Chưa mở khóa xoay</strong> → chỉ quét được khi <strong>cầm dọc máy</strong></p>
                     </div>
                     <ul class="camera-tips">
-                        <li>Cho phép <strong>Camera</strong> (và <strong>Cảm biến chuyển động</strong> nếu được hỏi)</li>
+                        <li>Cho phép truy cập <strong>Camera</strong></li>
                         <li>Học sinh giơ <strong>thẻ dọc</strong> — đáp án ở <strong>trên cùng</strong></li>
-                        <li>Quét lại được nếu học sinh <strong>đổi đáp án</strong></li>
+                        <li>Quét lại chỉ khi học sinh <strong>đổi đáp án</strong> (xoay thẻ)</li>
                     </ul>
                 </div>
             </div>
@@ -157,16 +157,7 @@
     </div>
     <div id="toast-container" class="toast-container"></div>
 
-    <div id="rotate-lock-warn" class="rotate-lock-warn hidden" aria-live="assertive" role="alertdialog" aria-labelledby="rotate-lock-title">
-        <div class="rotate-lock-warn-inner">
-            <div class="rotate-lock-warn-icon" aria-hidden="true">⚠️</div>
-            <h2 id="rotate-lock-title">Không quét được — chưa mở khóa xoay</h2>
-            <p>Bạn đang <strong>cầm/xoay ngang</strong> nhưng điện thoại vẫn <strong>khóa màn hình dọc</strong> (Control Center).</p>
-            <p class="rotate-lock-warn-note">Đây <strong>không phải lỗi ứng dụng</strong>. Cầm dọc máy lại để quét, hoặc bật <strong>khóa xoay</strong> rồi xoay ngang.</p>
-        </div>
-    </div>
-
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script src="app.js?v=20"></script>
+    <script src="app.js?v=21"></script>
 </body>
 </html>
