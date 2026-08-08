@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
     <div id="app">
@@ -28,25 +28,27 @@
 
         <!-- Bật camera (1 lần — tránh lỗi quyền) -->
         <section id="view-camera-prompt" class="view">
-            <div class="wait-card camera-prompt-card">
-                <div class="wait-icon">📷</div>
-                <h1>Sẵn sàng quét!</h1>
-                <p id="camera-prompt-meta" class="wait-status"></p>
-                <div id="camera-portrait-block" class="portrait-block orient-guide-block">
-                    <div class="portrait-block-icon" aria-hidden="true">📱</div>
-                    <p><strong>Cách 1 — Cầm dọc máy</strong> <span class="guide-tag">khuyên dùng</span></p>
-                    <p class="portrait-block-sub">Cách 2 — Mở <strong>khóa xoay màn hình</strong> (Control Center / Trung tâm điều khiển) rồi xoay ngang</p>
-                    <p class="orient-guide-warn">⚠️ <strong>Chưa mở khóa xoay</strong> → chỉ quét được khi <strong>cầm dọc máy</strong> (cầm ngang sẽ không quét)</p>
+            <div class="camera-prompt-body">
+                <div class="wait-card camera-prompt-card">
+                    <div class="wait-icon">📷</div>
+                    <h1>Sẵn sàng quét!</h1>
+                    <p id="camera-prompt-meta" class="wait-status"></p>
+                    <div id="camera-portrait-block" class="portrait-block orient-guide-block">
+                        <div class="portrait-block-icon" aria-hidden="true">📱</div>
+                        <p><strong>Cách 1 — Cầm dọc máy</strong> <span class="guide-tag">khuyên dùng</span></p>
+                        <p class="portrait-block-sub">Cách 2 — Mở <strong>khóa xoay màn hình</strong> (Control Center) rồi xoay ngang</p>
+                        <p class="orient-guide-warn">⚠️ <strong>Chưa mở khóa xoay</strong> → chỉ quét khi <strong>cầm dọc</strong></p>
+                    </div>
+                    <ul class="camera-tips">
+                        <li>Cho phép <strong>Camera</strong> (và <strong>Cảm biến chuyển động</strong> nếu được hỏi)</li>
+                        <li>Học sinh giơ <strong>thẻ dọc</strong> — đáp án ở <strong>trên cùng</strong></li>
+                        <li>Quét lại được nếu học sinh <strong>đổi đáp án</strong></li>
+                    </ul>
                 </div>
-                <ul class="camera-tips">
-                    <li><strong>Chưa mở khóa xoay</strong> → chỉ quét được khi <strong>cầm dọc máy</strong></li>
-                    <li><strong>Đã mở khóa xoay</strong> → có thể xoay ngang để quét</li>
-                    <li>Cho phép truy cập <strong>Camera</strong> (và <strong>Cảm biến chuyển động</strong> nếu được hỏi)</li>
-                    <li>Học sinh giơ <strong>thẻ dọc</strong> — chữ đáp án chọn ở <strong>trên cùng</strong></li>
-                    <li>Quét liên tục nhiều học sinh</li>
-                </ul>
-                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera">▶ Bật camera &amp; quét</button>
             </div>
+            <footer class="camera-prompt-footer">
+                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera">▶ Bật camera &amp; quét</button>
+            </footer>
         </section>
 
         <!-- Quét thẻ -->

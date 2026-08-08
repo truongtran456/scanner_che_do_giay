@@ -46,13 +46,58 @@ body {
 }
 .btn-sm { padding: 0.55rem 0.85rem; font-size: 0.85rem; border-radius: 10px; }
 
-#view-waiting, #view-ended, #view-no-session, #view-camera-prompt {
+#view-waiting, #view-ended, #view-no-session {
     background: linear-gradient(180deg, #0a0a0f, #0d1a12);
     align-items: center; justify-content: center;
 }
+
+#view-camera-prompt {
+    background: linear-gradient(180deg, #0a0a0f, #0d1a12);
+}
+
+#view-camera-prompt.active {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    height: 100svh;
+    overflow: hidden;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.camera-prompt-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 1rem 1rem 0.5rem;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.camera-prompt-footer {
+    flex-shrink: 0;
+    padding: 0.65rem 1rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(10, 10, 15, 0.55), rgba(10, 10, 15, 0.98) 35%);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.camera-prompt-footer .btn-camera-go {
+    width: 100%;
+    margin: 0;
+    max-width: 420px;
+    margin-inline: auto;
+    display: flex;
+}
 .wait-card {
-    text-align: center; padding: 2rem 1.5rem; max-width: 360px;
-    display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+    text-align: center; padding: 1.25rem 1rem 1rem; max-width: 420px; width: 100%;
+    display: flex; flex-direction: column; align-items: center; gap: 0.65rem;
 }
 .wait-icon { font-size: 3.5rem; }
 .wait-card h1 {
@@ -89,12 +134,13 @@ body {
 
 .camera-tips {
     list-style: none; text-align: left; width: 100%;
-    font-size: 0.88rem; color: rgba(255,255,255,0.7); line-height: 1.7;
-    padding: 0.75rem 1rem; background: rgba(255,255,255,0.04);
-    border-radius: 12px; margin: 0.5rem 0;
+    font-size: 0.84rem; color: rgba(255,255,255,0.7); line-height: 1.55;
+    padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.04);
+    border-radius: 12px; margin: 0.25rem 0 0;
 }
+.camera-tips li + li { margin-top: 0.35rem; }
 .camera-tips strong { color: var(--lime); }
-.btn-camera-go { width: 100%; padding: 1rem; font-size: 1.05rem; margin-top: 0.5rem; }
+.btn-camera-go { width: 100%; padding: 0.95rem 1rem; font-size: 1.05rem; }
 .btn-camera-go:disabled {
     opacity: 0.45; cursor: not-allowed;
     box-shadow: none; filter: grayscale(0.5);
@@ -102,8 +148,7 @@ body {
 
 /* Màn chờ / bật camera — landscape */
 @media (orientation: landscape) {
-    #view-waiting.active,
-    #view-camera-prompt.active {
+    #view-waiting.active {
         overflow-y: auto;
         justify-content: center;
         padding: 0.75rem 1rem;
@@ -111,52 +156,54 @@ body {
         padding-right: max(0.75rem, env(safe-area-inset-right));
     }
 
+    .camera-prompt-body {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
+    .camera-prompt-footer {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
     #view-camera-prompt .camera-prompt-card {
-        max-width: min(900px, 96vw);
-        width: 100%;
+        max-width: min(760px, 96vw);
         display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto 1fr auto;
-        gap: 0.65rem 1.25rem;
-        align-items: center;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "head head"
+            "meta meta"
+            "guide guide"
+            "tips tips";
+        gap: 0.5rem 1rem;
+        align-items: start;
         text-align: left;
-        padding: 1.25rem 1.5rem;
+        padding: 0.75rem 0.5rem;
     }
 
     #view-camera-prompt .camera-prompt-card .wait-icon {
-        grid-column: 1; grid-row: 1;
-        font-size: 2.25rem; justify-self: start;
+        display: none;
     }
 
     #view-camera-prompt .camera-prompt-card h1 {
-        grid-column: 1 / -1; grid-row: 1;
-        text-align: center; font-size: 1.35rem;
+        grid-area: head;
+        text-align: center;
+        font-size: 1.25rem;
     }
 
-    #view-camera-prompt .camera-prompt-meta {
-        grid-column: 1 / -1; grid-row: 2;
+    #view-camera-prompt .camera-prompt-meta,
+    #view-camera-prompt #camera-prompt-meta {
+        grid-area: meta;
         text-align: center;
     }
 
     #view-camera-prompt .portrait-block {
-        grid-column: 1 / -1;
+        grid-area: guide;
     }
 
     #view-camera-prompt .camera-tips {
-        grid-column: 1; grid-row: 3;
+        grid-area: tips;
         margin: 0;
-    }
-
-    #view-camera-prompt .btn-camera-go {
-        grid-column: 2; grid-row: 3;
-        align-self: center;
-        width: auto;
-        min-width: 180px;
-        max-width: 220px;
-        padding: 1rem 1.25rem;
-        margin-top: 0;
-        font-size: 1rem;
-        white-space: nowrap;
     }
 
     #view-waiting .wait-card {
@@ -175,18 +222,18 @@ body {
 
 .portrait-block {
     width: 100%; text-align: center;
-    padding: 1rem; margin: 0.5rem 0;
+    padding: 0.85rem; margin: 0.15rem 0 0;
     border-radius: 14px;
     background: rgba(255, 149, 0, 0.1);
     border: 1px solid rgba(255, 149, 0, 0.35);
 }
-.portrait-block-icon { font-size: 2.5rem; margin-bottom: 0.35rem; }
-.portrait-block p { font-weight: 700; font-size: 0.95rem; color: #ffcc80; line-height: 1.45; }
+.portrait-block-icon { font-size: 2rem; margin-bottom: 0.25rem; }
+.portrait-block p { font-weight: 700; font-size: 0.9rem; color: #ffcc80; line-height: 1.4; }
 .portrait-block p strong { color: var(--orange); }
 .portrait-block-sub { font-size: 0.82rem !important; color: rgba(255,255,255,0.6) !important; margin-top: 0.25rem; }
 .orient-guide-warn {
-    margin-top: 0.65rem; padding: 0.55rem 0.65rem; border-radius: 10px;
-    font-size: 0.8rem !important; font-weight: 700 !important; line-height: 1.45;
+    margin-top: 0.5rem; padding: 0.45rem 0.55rem; border-radius: 10px;
+    font-size: 0.78rem !important; font-weight: 700 !important; line-height: 1.4;
     color: #ffc9c9 !important;
     background: rgba(255, 59, 48, 0.12);
     border: 1px solid rgba(255, 59, 48, 0.35);
