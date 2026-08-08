@@ -350,14 +350,30 @@ console.log('\n[9] Tốc độ xử lý (mỗi khung hình 640x480)');
     check(`mỗi khung < 120ms (đo ${ms.toFixed(1)}ms)`, ms < 120, ms.toFixed(1) + 'ms');
 }
 
-console.log('\n[10] Dọc và ngang dùng chung decodeAll (không xoay/offset)');
+console.log('\n[10] UI dọc + khóa xoay + cầm ngang: xoay khung theo hướng');
 {
-    const raw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 0, x: 180, y: 120 }], 640, 480);
-    const hit = MarkerUtil.decodeAll(raw, 640, 480, students)[0];
+    const rawSide = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 180, y: 120 }], 640, 480);
+    const hit3 = MarkerUtil.decodeWithRotations(rawSide, 640, 480, students, [3])[0];
     check(
-        'thẻ A trên cùng → A',
-        hit?.cardNumber === 7 && hit?.orientation === 'A',
-        hit ? `${hit.cardNumber}/${hit.orientation}` : 'none'
+        'nghiêng phải (xoay khung 270°) → A',
+        hit3?.cardNumber === 7 && hit3?.orientation === 'A',
+        hit3 ? `${hit3.cardNumber}/${hit3.orientation}` : 'none'
+    );
+
+    const rawOther = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 3, x: 180, y: 120 }], 640, 480);
+    const hit1 = MarkerUtil.decodeWithRotations(rawOther, 640, 480, students, [1])[0];
+    check(
+        'nghiêng trái (xoay khung 90°) → A',
+        hit1?.cardNumber === 7 && hit1?.orientation === 'A',
+        hit1 ? `${hit1.cardNumber}/${hit1.orientation}` : 'none'
+    );
+
+    const rawA = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 0, x: 180, y: 120 }], 640, 480);
+    const hitA = MarkerUtil.decodeAll(rawA, 640, 480, students)[0];
+    check(
+        'cầm dọc (không xoay khung) → A',
+        hitA?.cardNumber === 7 && hitA?.orientation === 'A',
+        hitA ? `${hitA.cardNumber}/${hitA.orientation}` : 'none'
     );
 }
 
