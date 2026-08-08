@@ -1065,7 +1065,6 @@ const CardScanner = {
 
         if (this.questionKey !== q.id) this.resetForQuestion(q.id);
 
-        const confirmKey = this._lockKey(q.id, hit.student.id);
         if (this.isStudentLocked(hit.student.id, q.id)) {
             this.pending.delete(hit.cardId);
             return;
@@ -1082,7 +1081,6 @@ const CardScanner = {
 
         if (p.frames >= this.CONFIRM_FRAMES) {
             this.pending.delete(hit.cardId);
-            this.confirmed.set(confirmKey, hit.orientation);
             this._fireScan(hit.cardId, hit.orientation, hit.student);
         }
     },
@@ -1103,10 +1101,15 @@ function onCardScanned(cardId, orientation, knownStudent = null) {
     }
 
     const q = getCurrentQuestion(s);
-    if (CardScanner.isStudentLocked(student.id, q?.id)) return;
+    if (!q) return;
 
     const result = recordAnswer(s, student.id, cardId, orientation);
     if (!result.ok) return;
+
+    if (!SyncEngine.conn?.open) {
+        showToast('⚠ Mất kết nối máy chiếu — thử đồng bộ lại', 3000);
+        return;
+    }
 
     SyncEngine.send({
         type: 'ANSWER_SCANNED',

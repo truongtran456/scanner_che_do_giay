@@ -1175,8 +1175,14 @@ function handleSyncMessage(msg) {
         if (msg.type === 'SCANNER_CONNECTED') {
             onScannerConnected();
         } else if (msg.type === 'ANSWER_SCANNED' || msg.type === 'ANSWER_UPDATED') {
-            if (msg.session) mergeSession(msg.session);
-            else renderPresenter();
+            if (msg.session) {
+                mergeSession(msg.session);
+            } else if (appState.session && msg.studentId && msg.answer) {
+                recordAnswer(appState.session, msg.studentId, msg.cardId, msg.answer);
+                renderPresenter();
+            } else {
+                renderPresenter();
+            }
         } else if (['LOCK_QUESTION', 'NEXT_QUESTION', 'END_SESSION', 'REQUEST_STATE'].includes(msg.type)) {
             handlePresenterCommand(msg);
         } else if (msg.type === 'SESSION_COMPLETED') {
