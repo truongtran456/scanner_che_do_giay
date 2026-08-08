@@ -154,6 +154,12 @@ function uid(prefix = 'id') {
     return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function getStudentAnswer(session, questionId, studentId) {
+    return session?.answers?.find(
+        a => a.questionId === questionId && a.studentId === studentId
+    );
+}
+
 function recordAnswer(session, studentId, cardId, answer) {
     const q = getCurrentQuestion(session);
     if (!q || session.status === SESSION_STATUS.QUESTION_LOCKED ||
@@ -162,6 +168,10 @@ function recordAnswer(session, studentId, cardId, answer) {
     if (!session.answers) session.answers = [];
 
     const existingIdx = getAnswerKey(session, q.id, studentId);
+    if (existingIdx >= 0 && session.answers[existingIdx].answer) {
+        return { ok: false, locked: true };
+    }
+
     const record = {
         id: uid('ans'),
         sessionId: session.id,
@@ -173,14 +183,12 @@ function recordAnswer(session, studentId, cardId, answer) {
         submittedAt: Date.now()
     };
 
-    let updated = false;
     if (existingIdx >= 0) {
         session.answers[existingIdx] = { ...session.answers[existingIdx], answer, submittedAt: Date.now() };
-        updated = true;
     } else {
         session.answers.push(record);
     }
-    return { ok: true, updated };
+    return { ok: true };
 }
 
 function getQuestionStats(session, questionId) {
@@ -836,6 +844,21 @@ const CardScanner = {
         this.confirmed.clear();
         this.questionKey = questionId;
         this.frameCount = 0;
+        this._seedConfirmedFromAnswers();
+    },
+
+    _seedConfirmedFromAnswers() {
+        const s = appState.session;
+        const q = getCurrentQuestion(s);
+        if (!s || !q) return;
+        for (const st of s.students || []) {
+            const ans = getStudentAnswer(s, q.id, st.id);
+            if (ans?.answer) this.confirmed.set(`${q.id}_${st.cardId}`, ans.answer);
+        }
+    },
+
+    _isLocked(cardId, questionId) {
+        return questionId && this.confirmed.has(`${questionId}_${cardId}`);
     },
 
     onQuestionChanged(questionId) {
@@ -920,7 +943,9 @@ const CardScanner = {
         }
         const seen = new Set();
 
+        const q = getCurrentQuestion(appState.session);
         for (const hit of hits) {
+            if (this._isLocked(hit.cardId, q?.id)) continue;
             seen.add(hit.cardId);
             this._trackHit(hit);
         }
@@ -940,14 +965,12 @@ const CardScanner = {
         if (this.questionKey !== q.id) this.resetForQuestion(q.id);
 
         const confirmKey = `${q.id}_${hit.cardId}`;
-        const already = this.confirmed.get(confirmKey);
-        if (already === hit.orientation) return;
+        if (this.confirmed.has(confirmKey)) return;
 
-        const existing = appState.session.answers.find(
-            a => a.questionId === q.id && a.studentId === hit.student.id
-        );
-        if (existing?.answer === hit.orientation) {
-            this.confirmed.set(confirmKey, hit.orientation);
+        const existing = getStudentAnswer(appState.session, q.id, hit.student.id);
+        if (existing?.answer) {
+            this.confirmed.set(confirmKey, existing.answer);
+            this.pending.delete(hit.cardId);
             return;
         }
 
@@ -985,10 +1008,9 @@ function onCardScanned(cardId, orientation, knownStudent = null) {
     const result = recordAnswer(s, student.id, cardId, orientation);
     if (!result.ok) return;
 
-    const eventType = result.updated ? 'ANSWER_UPDATED' : 'ANSWER_SCANNED';
     const q = getCurrentQuestion(s);
     SyncEngine.send({
-        type: eventType,
+        type: 'ANSWER_SCANNED',
         studentId: student.id,
         cardId,
         answer: orientation,
@@ -996,13 +1018,12 @@ function onCardScanned(cardId, orientation, knownStudent = null) {
         session: getSessionSnapshot()
     });
 
+    CardScanner.confirmed.set(`${q?.id}_${cardId}`, orientation);
+
     const tag = $('#scan-last-flash');
     if (tag) {
-        tag.textContent = result.updated
-            ? `↻ ${student.name} → ${orientation}`
-            : `✓ ${student.name} · ${orientation}`;
+        tag.textContent = `✓ ${student.name} · ${orientation}`;
         tag.classList.remove('hidden', 'update');
-        if (result.updated) tag.classList.add('update');
         appState.lastFlashStudentId = student.id;
         clearTimeout(showScanFlash._t);
         showScanFlash._t = setTimeout(() => tag.classList.add('hidden'), 900);
@@ -1029,6 +1050,8 @@ function renderScanner() {
     const q = getCurrentQuestion(s);
     if (q && CardScanner.questionKey !== q.id) {
         CardScanner.resetForQuestion(q.id);
+    } else if (q) {
+        CardScanner._seedConfirmedFromAnswers();
     }
 
     const answeredList = getAnswersForQuestion(s, q?.id).filter(a => a.answer);

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
     <div id="app">
@@ -49,79 +49,70 @@
 
         <!-- Quét thẻ -->
         <section id="view-scanner" class="view scanner-view">
-            <video id="scanner-video" autoplay playsinline muted></video>
-            <canvas id="scanner-canvas" class="hidden"></canvas>
+            <div class="scan-layout">
+                <!-- 80% trái: camera + khung quét (ngang) / full màn (dọc) -->
+                <div class="scan-camera-pane">
+                    <video id="scanner-video" autoplay playsinline muted></video>
+                    <canvas id="scanner-canvas" class="hidden"></canvas>
 
-            <div id="camera-loading" class="camera-loading hidden">
-                <div class="camera-loading-ring"></div>
-                <p>Đang mở camera...</p>
-            </div>
-
-            <!-- HUD trên — 1 dòng -->
-            <header class="scan-hud-top">
-                <div class="scan-hud-left">
-                    <span id="scan-q-pill" class="scan-hud-q">Câu —</span>
-                    <span id="scan-orient-pill" class="scan-orient-pill landscape">NGANG</span>
-                </div>
-                <div class="scan-hud-center">
-                    <div class="scan-progress-wrap"><div id="scan-progress-fill" class="scan-progress-fill"></div></div>
-                    <span id="scan-count-pill" class="scan-hud-count">0/0</span>
-                </div>
-                <div class="scan-hud-right">
-                    <span id="scan-conn-dot" class="scan-conn-dot online" title="Đã kết nối"></span>
-                    <button type="button" class="scan-hud-menu" id="btn-scan-menu" aria-label="Menu">☰</button>
-                </div>
-            </header>
-
-            <!-- Banner cảnh báo dọc — luôn hiện khi portrait -->
-            <div id="scan-portrait-banner" class="scan-portrait-banner hidden" aria-live="assertive">
-                ⚠ XOAY NGANG MÁY — Quét dọc sẽ sai đáp án!
-            </div>
-
-            <!-- Cảnh báo xoay ngang — che toàn màn -->
-            <div id="orientation-prompt" class="orientation-prompt hidden" aria-live="polite">
-                <div class="orientation-prompt-inner">
-                    <div class="orientation-phone-icon" aria-hidden="true">📱</div>
-                    <h2>Xoay ngang máy để quét</h2>
-                    <p>Thẻ có <strong>4 hướng = 4 đáp án</strong>.<br>Cầm dọc điện thoại → <strong>sai đáp án</strong>.</p>
-                    <p class="orientation-sub">Học sinh vẫn giơ thẻ <strong>dọc</strong>, chữ đáp án ở trên.</p>
-                    <div class="orientation-steps">
-                        <span>1. Xoay ngang máy</span>
-                        <span>2. Giơ thẻ vào khung</span>
-                        <span>3. Quét liên tục</span>
+                    <div id="camera-loading" class="camera-loading hidden">
+                        <div class="camera-loading-ring"></div>
+                        <p>Đang mở camera...</p>
                     </div>
+
+                    <div id="scan-portrait-banner" class="scan-portrait-banner hidden" aria-live="assertive">
+                        ⚠ XOAY NGANG MÁY — Quét dọc sẽ sai đáp án!
+                    </div>
+
+                    <div id="orientation-prompt" class="orientation-prompt hidden" aria-live="polite">
+                        <div class="orientation-prompt-inner">
+                            <div class="orientation-phone-icon" aria-hidden="true">📱</div>
+                            <h2>Xoay ngang máy để quét</h2>
+                            <p>Thẻ có <strong>4 hướng = 4 đáp án</strong>.<br>Cầm dọc → <strong>sai đáp án</strong>.</p>
+                            <p class="orientation-sub">Học sinh giơ thẻ <strong>dọc</strong>, đáp án ở trên.</p>
+                        </div>
+                    </div>
+
+                    <div class="scan-frame-zone">
+                        <div class="scan-frame-guide" aria-hidden="true"></div>
+                        <p id="scan-frame-tip" class="scan-frame-tip">Giơ thẻ dọc — đáp án ở trên cùng</p>
+                    </div>
+
+                    <div id="scan-last-flash" class="scan-last-flash hidden" aria-live="polite"></div>
                 </div>
+
+                <!-- 20% phải: điều khiển (chỉ hiện rõ khi ngang) -->
+                <aside class="scan-sidebar">
+                    <header class="scan-sidebar-head">
+                        <span id="scan-q-pill" class="scan-hud-q">Câu —</span>
+                        <span id="scan-orient-pill" class="scan-orient-pill landscape">—</span>
+                    </header>
+
+                    <div class="scan-sidebar-stats">
+                        <div class="scan-progress-wrap"><div id="scan-progress-fill" class="scan-progress-fill"></div></div>
+                        <span id="scan-count-pill" class="scan-hud-count">0/0</span>
+                    </div>
+
+                    <div class="scan-sidebar-actions" id="scanner-active">
+                        <button type="button" class="scan-side-btn" id="btn-toggle-drawer">
+                            <span class="scan-dock-label">Chưa quét</span>
+                            <strong id="scan-pending-count">0</strong>
+                        </button>
+                        <button type="button" class="scan-side-lock" id="btn-lock-question">🔒 CHỐT CÂU</button>
+                        <div class="scan-sidebar-tools">
+                            <span id="scan-conn-dot" class="scan-conn-dot online" title="Đã kết nối"></span>
+                            <button type="button" class="scan-hud-menu" id="btn-scan-menu" aria-label="Menu">☰</button>
+                        </div>
+                    </div>
+
+                    <div class="scan-sidebar-result hidden" id="scanner-result">
+                        <p id="scan-result-summary" class="scan-result-summary"></p>
+                        <div id="scan-result-bars" class="scan-result-bars"></div>
+                        <button type="button" class="btn btn-secondary btn-sm scan-side-action" id="btn-show-choosers">👁 Ai chọn gì</button>
+                        <button type="button" class="btn btn-primary btn-sm scan-side-action" id="btn-next-q-result">Câu tiếp →</button>
+                    </div>
+                </aside>
             </div>
-
-            <!-- Vùng quét lớn -->
-            <div class="scan-frame-zone">
-                <div class="scan-frame-guide" aria-hidden="true"></div>
-                <p id="scan-frame-tip" class="scan-frame-tip">Giơ thẻ dọc — đáp án ở trên cùng</p>
-            </div>
-
-            <!-- Flash quét — không che camera -->
-            <div id="scan-last-flash" class="scan-last-flash hidden" aria-live="polite"></div>
-
-            <!-- Dock dưới — gọn -->
-            <footer class="scan-dock" id="scanner-active">
-                <button type="button" class="scan-dock-btn" id="btn-toggle-drawer">
-                    <span class="scan-dock-label">Chưa quét</span>
-                    <strong id="scan-pending-count">0</strong>
-                </button>
-                <button type="button" class="scan-dock-lock" id="btn-lock-question">🔒 CHỐT CÂU</button>
-            </footer>
-
-            <!-- Kết quả câu -->
-            <footer class="scan-dock scan-dock-result hidden" id="scanner-result">
-                <div class="scan-result-compact">
-                    <p id="scan-result-summary" class="scan-result-summary"></p>
-                    <div id="scan-result-bars" class="scan-result-bars"></div>
-                </div>
-                <div class="scan-result-actions">
-                    <button type="button" class="btn btn-secondary btn-sm" id="btn-show-choosers">👁 Ai chọn gì</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="btn-next-q-result">Câu tiếp →</button>
-                </div>
-            </footer>
 
             <!-- Drawer danh sách HS -->
             <div id="scanner-drawer" class="scanner-drawer hidden">
@@ -163,6 +154,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>
