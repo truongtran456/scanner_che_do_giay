@@ -685,10 +685,7 @@ const MarkerUtil = {
     }
 };
 
-/* ===== HƯỚNG MÀN HÌNH ===== */
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
+/* ===== HƯỚNG MÀN HÌNH (chỉ UI gợi ý — không đổi logic quét) ===== */
 const ScanOrientation = {
     _landscape: false,
     _type: 'portrait-primary',
@@ -742,24 +739,6 @@ const ScanOrientation = {
 
     isLandscape() {
         return this._landscape;
-    },
-
-    /** Bù bằng xoay khung — không dùng offset (A+3=D gây sai trên iPhone mới) */
-    getOrientOffset() {
-        return 0;
-    },
-
-    getFrameRotationDeg() {
-        if (!this._landscape) return 0;
-        return this._type === 'landscape-secondary' ? 90 : 270;
-    },
-
-    /** Cần xoay khung trước khi decode */
-    needsFrameRotation(videoLandscape) {
-        if (!this._landscape) return false;
-        // iOS: buffer camera thường vẫn dọc (vh>vw) dù máy ngang → vẫn phải xoay
-        if (IS_IOS) return true;
-        return videoLandscape;
     }
 };
 
@@ -841,39 +820,15 @@ function captureScanFrame(video, canvas, ctx) {
     if (!vw || !vh) return null;
 
     const drawCtx = ctx || canvas.getContext('2d', { willReadFrequently: true });
-    const videoLandscape = vw > vh;
-    let rot = 0;
-    if (ScanOrientation.needsFrameRotation(videoLandscape)) {
-        rot = ScanOrientation.getFrameRotationDeg();
-    }
-
-    if (rot === 90 || rot === 270) {
-        canvas.width = vh;
-        canvas.height = vw;
-        drawCtx.save();
-        drawCtx.translate(canvas.width / 2, canvas.height / 2);
-        drawCtx.rotate(rot * Math.PI / 180);
-        drawCtx.drawImage(video, -vw / 2, -vh / 2);
-        drawCtx.restore();
-    } else if (rot === 180) {
-        canvas.width = vw;
-        canvas.height = vh;
-        drawCtx.save();
-        drawCtx.translate(canvas.width / 2, canvas.height / 2);
-        drawCtx.rotate(Math.PI);
-        drawCtx.drawImage(video, -vw / 2, -vh / 2);
-        drawCtx.restore();
-    } else {
-        canvas.width = vw;
-        canvas.height = vh;
-        drawCtx.drawImage(video, 0, 0);
-    }
+    canvas.width = vw;
+    canvas.height = vh;
+    drawCtx.drawImage(video, 0, 0);
 
     return {
-        data: drawCtx.getImageData(0, 0, canvas.width, canvas.height).data,
-        width: canvas.width,
-        height: canvas.height,
-        videoLandscape
+        data: drawCtx.getImageData(0, 0, vw, vh).data,
+        width: vw,
+        height: vh,
+        videoLandscape: vw > vh
     };
 }
 

@@ -350,55 +350,14 @@ console.log('\n[9] Tốc độ xử lý (mỗi khung hình 640x480)');
     check(`mỗi khung < 120ms (đo ${ms.toFixed(1)}ms)`, ms < 120, ms.toFixed(1) + 'ms');
 }
 
-console.log('\n[10] Landscape: xoay khung 270°/90° (không offset iOS)');
+console.log('\n[10] Dọc và ngang dùng chung decodeAll (không xoay/offset)');
 {
-    function rotateRgba90CW(src, w, h, times) {
-        let data = src, cw = w, ch = h;
-        for (let t = 0; t < times; t++) {
-            const out = new Uint8ClampedArray(cw * ch * 4);
-            const nw = ch, nh = cw;
-            for (let y = 0; y < ch; y++) {
-                for (let x = 0; x < cw; x++) {
-                    const si = (y * cw + x) * 4;
-                    const nx = ch - 1 - y, ny = x;
-                    const di = (ny * nw + nx) * 4;
-                    out[di] = data[si]; out[di + 1] = data[si + 1];
-                    out[di + 2] = data[si + 2]; out[di + 3] = data[si + 3];
-                }
-            }
-            data = out; cw = nw; ch = nh;
-        }
-        return { data, w: cw, h: ch };
-    }
-
-    // Ngang primary: thẻ A trong khung bị xoay 1 bước (đọc B) → xoay 270° → A
-    const priRaw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 180, y: 120 }], 640, 480);
-    const priFixed = rotateRgba90CW(priRaw, 640, 480, 3);
-    const priHit = MarkerUtil.decodeAll(priFixed.data, priFixed.w, priFixed.h, students)[0];
+    const raw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 0, x: 180, y: 120 }], 640, 480);
+    const hit = MarkerUtil.decodeAll(raw, 640, 480, students)[0];
     check(
-        'ngang primary: xoay 270° → A',
-        priHit?.cardNumber === 7 && priHit?.orientation === 'A',
-        priHit ? `${priHit.cardNumber}/${priHit.orientation}` : 'none'
-    );
-
-    // Ngang secondary: thẻ A bị xoay 3 bước (đọc D) → xoay 90° → A
-    const secRaw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 3, x: 180, y: 120 }], 640, 480);
-    const secFixed = rotateRgba90CW(secRaw, 640, 480, 1);
-    const secHit = MarkerUtil.decodeAll(secFixed.data, secFixed.w, secFixed.h, students)[0];
-    check(
-        'ngang secondary: xoay 90° → A',
-        secHit?.cardNumber === 7 && secHit?.orientation === 'A',
-        secHit ? `${secHit.cardNumber}/${secHit.orientation}` : 'none'
-    );
-
-    // iOS: buffer camera dọc 480×640, thẻ A đọc B → xoay 270° → A
-    const iosRaw = makeScene([{ cardNumber: 7, cellPx: 14, rotations: 1, x: 120, y: 180 }], 480, 640);
-    const iosFixed = rotateRgba90CW(iosRaw, 480, 640, 3);
-    const iosHit = MarkerUtil.decodeAll(iosFixed.data, iosFixed.w, iosFixed.h, students)[0];
-    check(
-        'iOS buffer dọc + xoay 270° → A',
-        iosHit?.cardNumber === 7 && iosHit?.orientation === 'A',
-        iosHit ? `${iosHit.cardNumber}/${iosHit.orientation}` : 'none'
+        'thẻ A trên cùng → A',
+        hit?.cardNumber === 7 && hit?.orientation === 'A',
+        hit ? `${hit.cardNumber}/${hit.orientation}` : 'none'
     );
 }
 
