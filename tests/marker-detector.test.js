@@ -190,6 +190,57 @@ const desktopMU = loadMarkerUtil(
     check('40 thẻ: mã desktop khớp scanner', diff === 0, diff + ' thẻ lệch');
 }
 
+console.log('\n[6b] Mã presenter và scanner phải giống hệt nhau');
+const presenterMU = loadMarkerUtil(
+    path.join(ROOT, 'presenter', 'app.js'),
+    'function syncCardLabels()'
+);
+{
+    let diff = 0;
+    for (let n = 1; n <= 40; n++) {
+        const a = MarkerUtil.getGrid(n).map(r => r.join('')).join('');
+        const b = presenterMU.getGrid(n).map(r => r.join('')).join('');
+        if (a !== b) diff++;
+    }
+    check('40 thẻ: mã presenter khớp scanner', diff === 0, diff + ' thẻ lệch');
+}
+
+console.log('\n[6c] Scanner đọc được mã thẻ legacy (in từ presenter cũ)');
+{
+    const legacyGrid = MarkerUtil.getLegacyGrid(7);
+    const cellPx = 14;
+    const size = 7 * cellPx;
+    const plane = new Uint8Array(size * size).fill(255);
+    for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+            if (!legacyGrid[r][c]) continue;
+            for (let y = r * cellPx; y < (r + 1) * cellPx; y++) {
+                for (let x = c * cellPx; x < (c + 1) * cellPx; x++) plane[y * size + x] = 0;
+            }
+        }
+    }
+    const W = 640, H = 480;
+    const rgba = new Uint8ClampedArray(W * H * 4);
+    for (let i = 0; i < W * H; i++) {
+        rgba[i * 4] = rgba[i * 4 + 1] = rgba[i * 4 + 2] = 250;
+        rgba[i * 4 + 3] = 255;
+    }
+    const ox = 200, oy = 120;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const di = ((oy + y) * W + ox + x) * 4;
+            const v = plane[y * size + x];
+            rgba[di] = rgba[di + 1] = rgba[di + 2] = v;
+        }
+    }
+    const hits = MarkerUtil.decodeAll(rgba, W, H, students);
+    check(
+        'legacy thẻ 7 / A',
+        hits.length === 1 && hits[0].cardNumber === 7 && hits[0].orientation === 'A',
+        hits.length ? `${hits[0].cardNumber}/${hits[0].orientation}` : 'không đọc được'
+    );
+}
+
 /* Canvas giả để chạy hàm vẽ thẻ của desktop */
 function makeFakeCanvas() {
     const st = { w: 0, h: 0, buf: null };

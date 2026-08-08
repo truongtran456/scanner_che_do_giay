@@ -76,9 +76,9 @@ body {
 }
 .wait-orient-tip strong { color: var(--orange); }
 .wait-orient-tip.portrait-warn {
-    background: rgba(255, 68, 68, 0.15);
-    border-color: rgba(255, 68, 68, 0.55);
-    color: #ff9999;
+    background: rgba(255, 149, 0, 0.12);
+    border-color: rgba(255, 149, 0, 0.4);
+    color: #ffcc80;
 }
 .wait-spinner {
     width: 40px; height: 40px; border: 3px solid rgba(57,255,20,0.15);
@@ -100,22 +100,90 @@ body {
     box-shadow: none; filter: grayscale(0.5);
 }
 
+/* Màn chờ / bật camera — landscape */
+@media (orientation: landscape) {
+    #view-waiting.active,
+    #view-camera-prompt.active {
+        overflow-y: auto;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        padding-left: max(0.75rem, env(safe-area-inset-left));
+        padding-right: max(0.75rem, env(safe-area-inset-right));
+    }
+
+    #view-camera-prompt .camera-prompt-card {
+        max-width: min(900px, 96vw);
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 0.65rem 1.25rem;
+        align-items: center;
+        text-align: left;
+        padding: 1.25rem 1.5rem;
+    }
+
+    #view-camera-prompt .camera-prompt-card .wait-icon {
+        grid-column: 1; grid-row: 1;
+        font-size: 2.25rem; justify-self: start;
+    }
+
+    #view-camera-prompt .camera-prompt-card h1 {
+        grid-column: 1 / -1; grid-row: 1;
+        text-align: center; font-size: 1.35rem;
+    }
+
+    #view-camera-prompt .camera-prompt-meta {
+        grid-column: 1 / -1; grid-row: 2;
+        text-align: center;
+    }
+
+    #view-camera-prompt .portrait-block {
+        grid-column: 1 / -1;
+    }
+
+    #view-camera-prompt .camera-tips {
+        grid-column: 1; grid-row: 3;
+        margin: 0;
+    }
+
+    #view-camera-prompt .btn-camera-go {
+        grid-column: 2; grid-row: 3;
+        align-self: center;
+        width: auto;
+        min-width: 180px;
+        max-width: 220px;
+        padding: 1rem 1.25rem;
+        margin-top: 0;
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
+    #view-waiting .wait-card {
+        max-width: min(700px, 92vw);
+    }
+}
+
+#view-camera-prompt.prompt-portrait .btn-camera-go:not(:disabled) {
+    animation: none;
+}
+
+#view-camera-prompt.prompt-landscape .btn-camera-go:not(:disabled) {
+    box-shadow: 0 0 32px rgba(57, 255, 20, 0.65);
+    animation: lockPulse 1.5s ease-in-out infinite;
+}
+
 .portrait-block {
     width: 100%; text-align: center;
     padding: 1rem; margin: 0.5rem 0;
     border-radius: 14px;
-    background: rgba(255, 68, 68, 0.15);
-    border: 2px solid rgba(255, 68, 68, 0.55);
-    animation: portraitPulse 1.5s ease-in-out infinite;
+    background: rgba(255, 149, 0, 0.1);
+    border: 1px solid rgba(255, 149, 0, 0.35);
 }
 .portrait-block-icon { font-size: 2.5rem; margin-bottom: 0.35rem; }
-.portrait-block p { font-weight: 700; font-size: 0.95rem; color: #ff8888; line-height: 1.45; }
-.portrait-block p strong { color: var(--red); }
+.portrait-block p { font-weight: 700; font-size: 0.95rem; color: #ffcc80; line-height: 1.45; }
+.portrait-block p strong { color: var(--orange); }
 .portrait-block-sub { font-size: 0.82rem !important; color: rgba(255,255,255,0.6) !important; margin-top: 0.25rem; }
-@keyframes portraitPulse {
-    0%, 100% { border-color: rgba(255, 68, 68, 0.55); }
-    50% { border-color: rgba(255, 149, 0, 0.85); }
-}
 
 .scanner-view {
     position: relative; background: #000;
@@ -143,30 +211,20 @@ body {
 }
 
 .scanner-view.scan-portrait-mode .scan-camera-pane #scanner-video {
-    filter: grayscale(0.7) brightness(0.45);
+    filter: none;
 }
 .scanner-view.scan-portrait-mode .scan-frame-guide {
-    border-color: rgba(255, 68, 68, 0.7);
-    animation: portraitFramePulse 1.2s ease-in-out infinite;
-}
-@keyframes portraitFramePulse {
-    0%, 100% { border-color: rgba(255, 68, 68, 0.7); }
-    50% { border-color: rgba(255, 149, 0, 0.9); }
+    border-color: rgba(255, 149, 0, 0.55);
 }
 
 .scan-portrait-banner {
     position: absolute; top: 0; left: 0; right: 0; z-index: 42;
     padding: 0.55rem 0.75rem;
     padding-top: max(0.55rem, env(safe-area-inset-top));
-    background: linear-gradient(180deg, rgba(180, 20, 20, 0.95), rgba(120, 10, 10, 0.88));
-    color: #fff; font-family: var(--font-d); font-weight: 800;
-    font-size: 0.88rem; text-align: center;
-    border-bottom: 2px solid var(--orange);
-    animation: bannerPulse 1.2s ease-in-out infinite;
-}
-@keyframes bannerPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.82; }
+    background: linear-gradient(180deg, rgba(40, 32, 8, 0.92), rgba(28, 22, 6, 0.85));
+    color: #ffe8a3; font-family: var(--font-d); font-weight: 700;
+    font-size: 0.82rem; text-align: center;
+    border-bottom: 1px solid rgba(255, 149, 0, 0.45);
 }
 
 .camera-loading {
@@ -363,14 +421,6 @@ body {
 @keyframes lockPulse {
     0%, 100% { box-shadow: 0 0 16px rgba(57,255,20,0.4); }
     50% { box-shadow: 0 0 28px rgba(57,255,20,0.7); }
-}
-
-.scanner-view.scan-portrait-mode .scan-side-lock,
-.scanner-view.scan-portrait-mode .scan-side-btn {
-    opacity: 0.4; pointer-events: none;
-}
-.scanner-view.scan-portrait-mode .scan-frame-zone {
-    top: calc(52px + 2.2rem);
 }
 
 .scan-result-summary { font-family: var(--font-d); font-weight: 700; font-size: 0.9rem; margin-bottom: 0.35rem; color: var(--lime); }

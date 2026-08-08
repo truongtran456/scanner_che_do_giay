@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
     <div id="app">
@@ -21,7 +21,7 @@
                 <p class="wait-sub">Máy quét giáo viên</p>
                 <p id="wait-session" class="wait-session"></p>
                 <p id="wait-status" class="wait-status">Đang kết nối...</p>
-                <p class="wait-orient-tip">📱 Sau khi kết nối: <strong>xoay ngang</strong> máy để quét chính xác</p>
+                <p class="wait-orient-tip">📱 Gợi ý: <strong>xoay ngang</strong> máy để quét chính xác hơn</p>
                 <div class="wait-spinner"></div>
             </div>
         </section>
@@ -32,18 +32,18 @@
                 <div class="wait-icon">📷</div>
                 <h1>Sẵn sàng quét!</h1>
                 <p id="camera-prompt-meta" class="wait-status"></p>
-                <div id="camera-portrait-block" class="portrait-block hidden">
+                <div id="camera-portrait-block" class="portrait-block">
                     <div class="portrait-block-icon" aria-hidden="true">📱↻</div>
-                    <p><strong>Xoay ngang điện thoại / iPad trước!</strong></p>
-                    <p class="portrait-block-sub">Quét khi cầm dọc sẽ <strong>sai đáp án</strong>. Phải xoay ngang mới bật camera.</p>
+                    <p><strong>Gợi ý: xoay ngang điện thoại / iPad</strong></p>
+                    <p class="portrait-block-sub">Quét khi cầm dọc có thể <strong>sai đáp án</strong>. Vẫn có thể bật camera và thử ngay.</p>
                 </div>
                 <ul class="camera-tips">
-                    <li><strong>Bắt buộc xoay ngang</strong> trước khi quét</li>
+                    <li><strong>Nên xoay ngang</strong> để quét chính xác nhất</li>
                     <li>Cho phép truy cập <strong>Camera</strong></li>
                     <li>Học sinh giơ thẻ dọc — chữ đáp án chọn ở <strong>trên cùng</strong></li>
                     <li>Quét liên tục nhiều học sinh</li>
                 </ul>
-                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera" disabled>▶ Bật camera &amp; quét (xoay ngang trước)</button>
+                <button type="button" class="btn btn-primary btn-camera-go" id="btn-start-camera">▶ Bật camera &amp; quét</button>
             </div>
         </section>
 
@@ -60,8 +60,8 @@
                         <p>Đang mở camera...</p>
                     </div>
 
-                    <div id="scan-portrait-banner" class="scan-portrait-banner hidden" aria-live="assertive">
-                        ⚠ XOAY NGANG MÁY — Quét dọc sẽ sai đáp án!
+                    <div id="scan-portrait-banner" class="scan-portrait-banner hidden" aria-live="polite">
+                        💡 Gợi ý: xoay ngang máy để quét chính xác hơn
                     </div>
 
                     <div id="orientation-prompt" class="orientation-prompt hidden" aria-live="polite">
@@ -154,6 +154,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=12"></script>
 </body>
 </html>

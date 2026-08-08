@@ -135,46 +135,105 @@ function renderConnectQr(url) {
     }
 }
 
-/* ===== MARKER (Plickers-style) ===== */
+/* ===== MARKER (Plickers-style) — phải khớp hệt scanner/app.js ===== */
 const MarkerUtil = {
+    DATA_CELLS: (() => {
+        const cells = [];
+        for (let r = 1; r <= 5; r++) {
+            for (let c = 1; c <= 5; c++) {
+                if ((r === 1 || r === 5) && (c === 1 || c === 5)) continue;
+                cells.push([r, c]);
+            }
+        }
+        return cells;
+    })(),
+
+    MIN_CODE_DISTANCE: 7,
+    _book: null,
+    _bookSize: 0,
+
+    buildBook(count) {
+        const bits = this.DATA_CELLS.length;
+        const book = [];
+        let seed = 0x1f2e3d4c >>> 0;
+        const next = () => {
+            seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+            return seed;
+        };
+        let guard = 0;
+        while (book.length < count && guard < 500000) {
+            guard++;
+            const code = new Uint8Array(bits);
+            let ones = 0;
+            for (let i = 0; i < bits; i++) {
+                const b = (next() >>> 18) & 1;
+                code[i] = b;
+                ones += b;
+            }
+            if (ones < 6 || ones > bits - 6) continue;
+            let ok = true;
+            for (const prev of book) {
+                let d = 0;
+                for (let i = 0; i < bits; i++) if (prev[i] !== code[i]) d++;
+                if (d < this.MIN_CODE_DISTANCE) { ok = false; break; }
+            }
+            if (ok) book.push(code);
+        }
+        return book;
+    },
+
+    getCode(cardNumber) {
+        const need = Math.max(60, cardNumber + 10);
+        if (!this._book || this._bookSize < need) {
+            this._book = this.buildBook(need);
+            this._bookSize = need;
+        }
+        const idx = (Math.max(1, cardNumber) - 1) % this._book.length;
+        return this._book[idx];
+    },
+
     getGrid(cardNumber) {
         const grid = Array.from({ length: 7 }, () => Array(7).fill(0));
         for (let i = 0; i < 7; i++) {
             grid[0][i] = grid[6][i] = grid[i][0] = grid[i][6] = 1;
         }
-        let seed = cardNumber * 7919 + 104729;
-        for (let r = 1; r < 6; r++) {
-            for (let c = 1; c < 6; c++) {
-                seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-                grid[r][c] = (seed % 3) !== 0 ? 1 : 0;
-            }
-        }
-        grid[1][1] = grid[1][5] = grid[5][1] = 1;
+        grid[1][1] = 1;
+        grid[1][5] = 0;
+        grid[5][1] = 0;
         grid[5][5] = 0;
+        const code = this.getCode(cardNumber);
+        this.DATA_CELLS.forEach(([r, c], i) => { grid[r][c] = code[i]; });
         return grid;
     },
 
-    draw(canvas, cardNumber, cardId) {
-        const size = 120;
-        const cell = size / 7;
-        canvas.width = size;
-        canvas.height = size;
+    render(canvas, cardNumber, px = 120) {
+        const quiet = px / 9;
+        const markerSize = px - quiet * 2;
+        const cell = markerSize / 7;
+        canvas.width = px;
+        canvas.height = px;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, px, px);
+        ctx.fillStyle = '#000000';
         const grid = this.getGrid(cardNumber);
         for (let r = 0; r < 7; r++) {
             for (let c = 0; c < 7; c++) {
-                if (grid[r][c]) {
-                    ctx.fillStyle = '#000';
-                    ctx.fillRect(c * cell + 1, r * cell + 1, cell - 2, cell - 2);
-                }
+                if (!grid[r][c]) continue;
+                const x = quiet + c * cell;
+                const y = quiet + r * cell;
+                ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(cell) + 1, Math.ceil(cell) + 1);
             }
         }
+    },
+
+    draw(canvas, cardNumber, cardId) {
+        this.render(canvas, cardNumber, 120);
         if (window.QRCode && cardId) {
             const tmp = document.createElement('canvas');
             QRCode.toCanvas(tmp, cardId, { width: 36, margin: 0 }, () => {
-                ctx.drawImage(tmp, (size - 36) / 2, (size - 36) / 2, 36, 36);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(tmp, (120 - 36) / 2, (120 - 36) / 2, 36, 36);
             });
         }
     }
